@@ -1,0 +1,20 @@
+<div class="nav-section-label">Overview</div>
+<div class="nav-item"><a href="{% url 'admin_panel:dashboard' %}" class="nav-link-erms"><i class="bi bi-grid"></i>Dashboard</a></div>
+<div class="nav-section-label">Academic Setup</div>
+<div class="nav-item"><a href="{% url 'admin_panel:faculties' %}" class="nav-link-erms"><i class="bi bi-building"></i>Faculties</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:departments' %}" class="nav-link-erms"><i class="bi bi-diagram-3"></i>Departments</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:courses' %}" class="nav-link-erms"><i class="bi bi-journal-bookmark"></i>Courses</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:sessions' %}" class="nav-link-erms"><i class="bi bi-calendar3"></i>Sessions</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:semesters' %}" class="nav-link-erms"><i class="bi bi-calendar2-range"></i>Semesters</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:grade_scales' %}" class="nav-link-erms"><i class="bi bi-bar-chart-steps"></i>Grade Scales</a></div>
+<div class="nav-section-label">User Management</div>
+<div class="nav-item"><a href="{% url 'admin_panel:users' %}" class="nav-link-erms"><i class="bi bi-people"></i>All Users <span class="nav-badge">{{ pending_approvals|default:'' }}</span></a></div>
+<div class="nav-section-label">Results</div>
+<div class="nav-item"><a href="{% url 'admin_panel:approve_results' %}" class="nav-link-erms"><i class="bi bi-check2-circle"></i>Approve Results</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:publish_results' %}" class="nav-link-erms"><i class="bi bi-send"></i>Publish Results</a></div>
+<div class="nav-section-label">Communication</div>
+<div class="nav-item"><a href="{% url 'complaints:admin_list' %}" class="nav-link-erms"><i class="bi bi-chat-left-dots"></i>Complaints</a></div>
+<div class="nav-item"><a href="{% url 'feedback:report' %}" class="nav-link-erms"><i class="bi bi-star"></i>Feedback</a></div>
+<div class="nav-section-label">Reports & Logs</div>
+<div class="nav-item"><a href="{% url 'reports:home' %}" class="nav-link-erms"><i class="bi bi-file-earmark-bar-graph"></i>Reports</a></div>
+<div class="nav-item"><a href="{% url 'admin_panel:audit_logs' %}" class="nav-link-erms"><i class="bi bi-shield-check"></i>Audit Logs</a></div>

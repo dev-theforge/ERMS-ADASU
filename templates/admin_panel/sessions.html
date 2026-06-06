@@ -1,0 +1,45 @@
+{% extends "base/base.html" %}
+{% block title %}Academic Sessions — ERMS{% endblock %}
+{% block page_title %}Academic Sessions{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-calendar3 me-2"></i>All Sessions</h6></div>
+      <div style="overflow-x:auto;">
+        <table class="erms-table">
+          <thead><tr><th>Name</th><th>Start Date</th><th>End Date</th><th>Semesters</th><th>Current</th></tr></thead>
+          <tbody>
+          {% for s in sessions %}
+          <tr>
+            <td><strong>{{ s.name }}</strong></td>
+            <td>{{ s.start_date|date:"d M Y" }}</td>
+            <td>{{ s.end_date|date:"d M Y" }}</td>
+            <td class="text-center">{{ s.semesters.count }}</td>
+            <td class="text-center">{% if s.is_current %}<span class="badge-status badge-active"><i class="bi bi-check-circle me-1"></i>Current</span>{% else %}—{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center py-4 text-muted">No sessions created yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-plus-circle me-2"></i>Add Session</h6></div>
+      <div class="erms-card-body">
+        <form method="post">{% csrf_token %}
+          <div class="mb-3"><label class="erms-form-label">Session Name *</label><input type="text" name="name" class="erms-form-control" placeholder="e.g. 2024/2025" required/></div>
+          <div class="mb-3"><label class="erms-form-label">Start Date *</label><input type="date" name="start_date" class="erms-form-control" required/></div>
+          <div class="mb-3"><label class="erms-form-label">End Date *</label><input type="date" name="end_date" class="erms-form-control" required/></div>
+          <div class="mb-4"><div class="form-check"><input type="checkbox" name="is_current" class="form-check-input" id="isCurrent"/><label class="form-check-label" for="isCurrent" style="font-size:14px;">Mark as Current Session</label></div></div>
+          <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-plus me-1"></i>Create Session</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

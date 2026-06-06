@@ -1,0 +1,65 @@
+{% extends "base/base.html" %}
+{% block title %}Academic History — ERMS{% endblock %}
+{% block page_title %}Academic History{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_student.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h4>Academic History</h4><p>{{ student.matric_number }} · {{ student.department }}</p></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'student:transcript' %}" class="btn-erms-primary"><i class="bi bi-file-earmark-pdf me-1"></i>Download Transcript</a>
+  </div>
+</div>
+{% if cgpa %}
+<div class="erms-card mb-4" style="background:linear-gradient(135deg,#1B2B5A,#0D7377);border:none;">
+  <div class="erms-card-body" style="display:flex;align-items:center;justify-content:space-between;padding:24px;">
+    <div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Cumulative GPA</div>
+      <div style="font-size:48px;font-weight:900;color:white;line-height:1;">{{ cgpa.cgpa }}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;">{{ cgpa.total_accumulated_credit_units }} credit units · {{ cgpa.total_accumulated_quality_points }} quality points</div>
+    </div>
+    <i class="bi bi-award-fill" style="font-size:64px;color:rgba(255,255,255,.15);"></i>
+  </div>
+</div>
+{% endif %}
+{% for sess_name, sem_data_list in sessions_data.items %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header" style="background:#F8FAFC;">
+    <h6 class="erms-card-title"><i class="bi bi-calendar3 me-2"></i>{{ sess_name }}</h6>
+  </div>
+  {% for sem_data in sem_data_list %}
+  <div style="border-bottom:1px solid #E2E8F0;">
+    <div style="padding:12px 20px;background:#FAFBFC;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:#1B2B5A;">{{ sem_data.semester }}</span>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <span style="font-size:13px;color:#718096;">{{ sem_data.gpa.total_credit_units }} CU</span>
+        <span style="font-size:16px;font-weight:800;color:#0D7377;">GPA: {{ sem_data.gpa.gpa }}</span>
+        <a href="{% url 'student:download_result_slip' sem_data.semester.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:11px;"><i class="bi bi-download"></i></a>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="erms-table" style="font-size:13px;">
+        <thead><tr><th>Code</th><th>Course Title</th><th>CU</th><th>Score</th><th>Grade</th><th>GP</th><th>QP</th></tr></thead>
+        <tbody>
+        {% for r in sem_data.results %}
+        <tr>
+          <td><strong>{{ r.course.code }}</strong></td>
+          <td>{{ r.course.title }}</td>
+          <td class="text-center">{{ r.course.credit_units }}</td>
+          <td class="text-center"><strong>{{ r.score }}</strong></td>
+          <td class="text-center"><span class="badge-status grade-{{ r.grade }}" style="font-size:11px;">{{ r.grade }}</span></td>
+          <td class="text-center">{{ r.grade_point }}</td>
+          <td class="text-center">{{ r.quality_points }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-3 text-muted" style="font-size:13px;">No published results</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% empty %}
+<div class="erms-card"><div class="empty-state" style="padding:60px;"><div class="empty-state-icon"><i class="bi bi-clock-history"></i></div><h5>No Academic History</h5><p>Your results will appear here once published</p></div></div>
+{% endfor %}
+{% endblock %}

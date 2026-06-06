@@ -1,0 +1,53 @@
+{% extends "base/base.html" %}
+{% block title %}Courses — ERMS{% endblock %}
+{% block page_title %}Manage Courses{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-plus-circle me-2"></i>Add New Course</h6></div>
+  <div class="erms-card-body">
+    <form method="post" class="row g-3">{% csrf_token %}
+      <div class="col-md-2"><label class="erms-form-label">Code *</label><input type="text" name="code" class="erms-form-control" placeholder="CSC101" required/></div>
+      <div class="col-md-4"><label class="erms-form-label">Title *</label><input type="text" name="title" class="erms-form-control" placeholder="Course title" required/></div>
+      <div class="col-md-2"><label class="erms-form-label">Department *</label>
+        <select name="department" class="erms-form-control" required>
+          <option value="">Select…</option>
+          {% for d in departments %}<option value="{{ d.pk }}">{{ d.code }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-1"><label class="erms-form-label">CU *</label><input type="number" name="credit_units" class="erms-form-control" min="1" max="6" value="3" required/></div>
+      <div class="col-md-1"><label class="erms-form-label">Level *</label>
+        <select name="level" class="erms-form-control">
+          <option value="100">100</option><option value="200">200</option><option value="300">300</option><option value="400">400</option><option value="500">500</option>
+        </select></div>
+      <div class="col-md-2"><label class="erms-form-label">Semester *</label>
+        <select name="semester_type" class="erms-form-control">
+          <option value="first">First</option><option value="second">Second</option>
+        </select></div>
+      <div class="col-12"><button type="submit" class="btn-erms-primary"><i class="bi bi-plus me-1"></i>Add Course</button></div>
+    </form>
+  </div>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Code</th><th>Title</th><th>Department</th><th>Faculty</th><th>Level</th><th>CU</th><th>Semester</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for c in courses %}
+      <tr>
+        <td><strong>{{ c.code }}</strong></td>
+        <td>{{ c.title }}</td>
+        <td>{{ c.department.code }}</td>
+        <td>{{ c.department.faculty.code }}</td>
+        <td class="text-center">{{ c.level }}</td>
+        <td class="text-center">{{ c.credit_units }}</td>
+        <td>{{ c.get_semester_type_display }}</td>
+        <td><span class="badge-status {% if c.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if c.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-center py-4 text-muted">No courses yet</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

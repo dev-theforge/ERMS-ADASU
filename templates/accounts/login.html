@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — ERMS Adasu University</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  {% load static %}<link rel="stylesheet" href="{% static 'css/erms.css' %}"/>
+  <style>
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#0F1D3D 0%,#1B2B5A 60%,#0D7377 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+    .auth-card { background:white; border-radius:20px; width:100%; max-width:460px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.3); }
+    .auth-header { background:linear-gradient(135deg,#1B2B5A,#0D7377); padding:32px; text-align:center; }
+    .auth-logo { width:64px;height:64px;background:rgba(255,255,255,.15);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:30px;color:white;margin:0 auto 16px;backdrop-filter:blur(10px); }
+    .auth-title { font-size:22px;font-weight:800;color:white;margin:0 0 4px; }
+    .auth-sub { font-size:13px;color:rgba(255,255,255,.65);margin:0; }
+    .auth-body { padding:32px; }
+    .form-group { margin-bottom:20px; }
+    .form-label { font-size:13px;font-weight:600;color:#1A202C;display:block;margin-bottom:8px; }
+    .input-wrap { position:relative; }
+    .input-icon { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#718096;font-size:16px; }
+    .form-input { width:100%;padding:12px 14px 12px 42px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'Inter',sans-serif;transition:all .2s;background:white; }
+    .form-input:focus { outline:none;border-color:#0D7377;box-shadow:0 0 0 3px rgba(13,115,119,.1); }
+    .form-input.is-invalid { border-color:#C0392B; }
+    .btn-login { width:100%;background:linear-gradient(135deg,#1B2B5A,#0D7377);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif; }
+    .btn-login:hover { opacity:.92;transform:translateY(-1px); }
+    .divider { text-align:center;margin:20px 0;position:relative; }
+    .divider::before { content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:#E2E8F0; }
+    .divider span { background:white;padding:0 12px;color:#718096;font-size:13px;position:relative; }
+    .register-link { text-align:center;font-size:13px;color:#718096; }
+    .register-link a { color:#0D7377;font-weight:600;text-decoration:none; }
+    .alert-msg { border-radius:10px;font-size:13px;padding:10px 14px;margin-bottom:16px;border:none; }
+    .alert-err { background:#FFF5F5;color:#C0392B; }
+    .alert-warn { background:#FFFBEB;color:#92400E; }
+    .back-link { display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.65);text-decoration:none;font-size:13px;font-weight:500;margin-bottom:24px;transition:color .2s; }
+    .back-link:hover { color:white; }
+  </style>
+</head>
+<body>
+<div class="auth-card">
+  <div class="auth-header">
+    <a href="{% url 'landing' %}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Home</a>
+    <div class="auth-logo"><i class="bi bi-mortarboard-fill"></i></div>
+    <h1 class="auth-title">Welcome Back</h1>
+    <p class="auth-sub">Sign in to ERMS — Adasu University Portal</p>
+  </div>
+  <div class="auth-body">
+    {% for message in messages %}
+    <div class="alert-msg {% if message.tags == 'error' or message.tags == 'danger' %}alert-err{% else %}alert-warn{% endif %}">
+      <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+    </div>
+    {% endfor %}
+    {% if form.non_field_errors %}
+    <div class="alert-msg alert-err"><i class="bi bi-exclamation-circle me-2"></i>{{ form.non_field_errors.0 }}</div>
+    {% endif %}
+
+    <form method="post">{% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <div class="input-wrap">
+          <i class="bi bi-person input-icon"></i>
+          <input type="text" name="username" class="form-input {% if form.username.errors %}is-invalid{% endif %}" placeholder="Enter your username" value="{{ form.username.value|default:'' }}" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap">
+          <i class="bi bi-lock input-icon"></i>
+          <input type="password" name="password" id="passwordField" class="form-input" placeholder="Enter your password" required/>
+          <button type="button" onclick="togglePass()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#718096;cursor:pointer;padding:0;font-size:16px;" id="eyeBtn"><i class="bi bi-eye" id="eyeIcon"></i></button>
+        </div>
+      </div>
+      <button type="submit" class="btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</button>
+    </form>
+
+    <div class="divider"><span>New to ERMS?</span></div>
+    <div class="register-link">
+      Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a>
+    </div>
+  </div>
+</div>
+<script>
+function togglePass() {
+  const f = document.getElementById('passwordField');
+  const i = document.getElementById('eyeIcon');
+  if (f.type === 'password') { f.type = 'text'; i.className = 'bi bi-eye-slash'; }
+  else { f.type = 'password'; i.className = 'bi bi-eye'; }
+}
+</script>
+</body>
+</html>

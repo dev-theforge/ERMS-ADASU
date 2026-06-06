@@ -1,0 +1,47 @@
+{% extends "base/base.html" %}
+{% block title %}Ward Results — ERMS{% endblock %}
+{% block page_title %}Ward Results{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_parent.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h4>{{ ward.user.get_full_name }}'s Results</h4>
+    <p>{{ ward.matric_number }} · {{ ward.department }}</p>
+  </div>
+  {% if cgpa %}<div style="text-align:right;"><div style="font-size:28px;font-weight:900;color:#0D7377;">{{ cgpa.cgpa }}</div><div style="font-size:11px;color:#718096;text-transform:uppercase;letter-spacing:1px;">CGPA</div></div>{% endif %}
+</div>
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6"><label class="erms-form-label">Filter by Semester</label>
+        <select name="semester" class="erms-form-control"><option value="">All Semesters</option>
+          {% for s in semesters %}<option value="{{ s.pk }}" {% if selected_semester == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-3"><button type="submit" class="btn-erms-primary w-100">Filter</button></div>
+      <div class="col-md-3"><a href="{% url 'parent:ward_results' ward.pk %}" class="btn-erms-outline w-100 justify-content-center">Clear</a></div>
+    </form>
+  </div>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Course Code</th><th>Course Title</th><th>CU</th><th>Score</th><th>Grade</th><th>GP</th><th>Semester</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+      <tr>
+        <td><strong>{{ r.course.code }}</strong></td>
+        <td>{{ r.course.title }}</td>
+        <td class="text-center">{{ r.course.credit_units }}</td>
+        <td class="text-center"><strong>{{ r.score }}</strong></td>
+        <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td class="text-center">{{ r.grade_point }}</td>
+        <td>{{ r.semester }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7"><div class="empty-state" style="padding:30px;"><i class="bi bi-clipboard-x" style="font-size:32px;color:#CBD5E0;"></i><p class="mt-2">No published results found</p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

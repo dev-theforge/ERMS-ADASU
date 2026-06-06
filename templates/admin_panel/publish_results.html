@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+{% block title %}Publish Results — ERMS{% endblock %}
+{% block page_title %}Publish Results{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6"><label class="erms-form-label">Select Semester</label>
+        <select name="semester" class="erms-form-control">
+          <option value="">Choose semester…</option>
+          {% for s in semesters %}<option value="{{ s.pk }}" {% if selected_semester and selected_semester.pk == s.pk %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-3"><button type="submit" class="btn-erms-primary w-100">Load Approved</button></div>
+    </form>
+  </div>
+</div>
+{% if selected_semester %}
+<div class="erms-card">
+  <div class="erms-card-header">
+    <h6 class="erms-card-title"><i class="bi bi-send me-2"></i>Approved Results Ready to Publish — {{ selected_semester }}</h6>
+    <span style="font-size:13px;color:#718096;">{{ results|length }} result(s)</span>
+  </div>
+  {% if results %}
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Student</th><th>Course</th><th>Score</th><th>Grade</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+      <tr>
+        <td><strong>{{ r.student.user.get_full_name }}</strong> ({{ r.student.matric_number }})</td>
+        <td>{{ r.course.code }} — {{ r.course.title }}</td>
+        <td class="text-center"><strong>{{ r.score }}</strong></td>
+        <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="erms-card-body border-top">
+    <div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#795548;">
+      <i class="bi bi-exclamation-triangle me-2"></i>Publishing results will notify all students and parents. This action cannot be undone.
+    </div>
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="semester_id" value="{{ selected_semester.pk }}"/>
+      <button type="submit" class="btn-erms-teal" data-confirm="Publish all {{ results|length }} approved results for {{ selected_semester }}? Students will be notified.">
+        <i class="bi bi-send me-1"></i>Publish {{ results|length }} Results for {{ selected_semester }}
+      </button>
+    </form>
+  </div>
+  {% else %}
+  <div class="empty-state" style="padding:60px;"><div class="empty-state-icon"><i class="bi bi-send"></i></div><h5>No Approved Results</h5><p>Approve results first before publishing</p><a href="{% url 'admin_panel:approve_results' %}?semester={{ selected_semester.pk }}" class="btn-erms-primary mt-3">Go to Approvals</a></div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

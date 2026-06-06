@@ -1,0 +1,178 @@
+{% extends "base/base.html" %} {% block title %}Grade Scales — ERMS{% endblock%}
+{% block page_title %}Grade Scales{% endblock %} {% block sidebar_nav %}{%
+include "base/sidebar_admin.html" %}{% endblock %} {% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{% url 'admin_panel:dashboard' %}">Dashboard</a>
+</li>
+<li class="breadcrumb-item active">Grade Scales</li>
+{% endblock %} {% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="erms-card">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">
+          <i class="bi bi-bar-chart-steps me-2"></i>Grading Scale
+        </h6>
+      </div>
+      <div style="overflow-x: auto">
+        <table class="erms-table">
+          <thead>
+            <tr>
+              <th>Label</th>
+              <th>Min Score</th>
+              <th>Max Score</th>
+              <th>Grade Point</th>
+              <th>Remark</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in scales %}
+            <tr>
+              <td>
+                <span class="badge-status grade-{{ s.label }}"
+                  >{{ s.label }}</span
+                >
+              </td>
+              <td class="text-center">{{ s.min_score }}</td>
+              <td class="text-center">{{ s.max_score }}</td>
+              <td class="text-center"><strong>{{ s.grade_point }}</strong></td>
+              <td>{{ s.remark|default:"—" }}</td>
+              <td>
+                <span
+                  class="badge-status {% if s.is_active %}badge-active{% else %}badge-inactive{% endif %}"
+                  >{% if s.is_active %}Active{% else %}Inactive{% endif %}</span
+                >
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                No grade scales defined. Add the default scale below.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="erms-card mb-4">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">
+          <i class="bi bi-plus-circle me-2"></i>Add Grade Scale Entry
+        </h6>
+      </div>
+      <div class="erms-card-body">
+        <form method="post">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="erms-form-label">Label (e.g. A)</label
+              ><input
+                type="text"
+                name="label"
+                class="erms-form-control"
+                placeholder="A"
+                maxlength="5"
+                required
+              />
+            </div>
+            <div class="col-6">
+              <label class="erms-form-label">Grade Point</label
+              ><input
+                type="number"
+                name="grade_point"
+                class="erms-form-control"
+                step="0.1"
+                min="0"
+                max="5"
+                placeholder="5.0"
+                required
+              />
+            </div>
+            <div class="col-6">
+              <label class="erms-form-label">Min Score</label
+              ><input
+                type="number"
+                name="min_score"
+                class="erms-form-control"
+                step="0.01"
+                placeholder="70"
+                required
+              />
+            </div>
+            <div class="col-6">
+              <label class="erms-form-label">Max Score</label
+              ><input
+                type="number"
+                name="max_score"
+                class="erms-form-control"
+                step="0.01"
+                placeholder="100"
+                required
+              />
+            </div>
+            <div class="col-12">
+              <label class="erms-form-label">Remark</label
+              ><input
+                type="text"
+                name="remark"
+                class="erms-form-control"
+                placeholder="Excellent, Good, etc."
+              />
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-erms-primary w-100">
+                <i class="bi bi-plus me-1"></i>Add Entry
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="erms-card">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">
+          <i class="bi bi-info-circle me-2"></i>Default Scale (ECTS/NUC)
+        </h6>
+      </div>
+      <div class="erms-card-body p-0">
+        <table style="width: 100%; font-size: 13px">
+          <tr style="background: #f5f7fa">
+            <td style="padding: 8px 16px; font-weight: 700">A</td>
+            <td style="padding: 8px">70 – 100</td>
+            <td style="padding: 8px; font-weight: 700; color: #0d7377">5.0</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px; font-weight: 700">B</td>
+            <td style="padding: 8px">60 – 69</td>
+            <td style="padding: 8px; font-weight: 700; color: #0d7377">4.0</td>
+          </tr>
+          <tr style="background: #f5f7fa">
+            <td style="padding: 8px 16px; font-weight: 700">C</td>
+            <td style="padding: 8px">50 – 59</td>
+            <td style="padding: 8px; font-weight: 700; color: #0d7377">3.0</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px; font-weight: 700">D</td>
+            <td style="padding: 8px">45 – 49</td>
+            <td style="padding: 8px; font-weight: 700; color: #d97706">2.0</td>
+          </tr>
+          <tr style="background: #f5f7fa">
+            <td style="padding: 8px 16px; font-weight: 700">E</td>
+            <td style="padding: 8px">40 – 44</td>
+            <td style="padding: 8px; font-weight: 700; color: #ea7317">1.0</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 16px; font-weight: 700">F</td>
+            <td style="padding: 8px">0 – 39</td>
+            <td style="padding: 8px; font-weight: 700; color: #c0392b">0.0</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

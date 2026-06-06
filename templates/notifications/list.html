@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% block title %}Notifications — ERMS{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block sidebar_nav %}
+{% if request.user.role == 'admin' %}{% include "base/sidebar_admin.html" %}
+{% elif request.user.role == 'lecturer' %}{% include "base/sidebar_lecturer.html" %}
+{% elif request.user.role == 'student' %}{% include "base/sidebar_student.html" %}
+{% else %}{% include "base/sidebar_parent.html" %}{% endif %}
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h4>All Notifications</h4><p>Stay updated on your academic activities</p></div>
+  <a href="{% url 'notifications:mark_all_read' %}" class="btn-erms-outline"><i class="bi bi-check2-all me-1"></i>Mark All Read</a>
+</div>
+<div class="erms-card">
+  {% for n in page_obj %}
+  <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid #E2E8F0;{% if not n.is_read %}background:#F0F9FF;{% endif %}transition:background .15s;">
+    <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;
+      {% if n.notification_type == 'gpa_warning' %}background:#FEF3C7;color:#D97706;
+      {% elif n.notification_type == 'result_published' %}background:#D1FAE5;color:#065F46;
+      {% elif n.notification_type == 'complaint_update' %}background:#DBEAFE;color:#1E40AF;
+      {% elif n.notification_type == 'account_approval' %}background:#D1FAE5;color:#065F46;
+      {% elif n.notification_type == 'account_rejection' %}background:#FEE2E2;color:#991B1B;
+      {% else %}background:#EDE9FE;color:#5B21B6;{% endif %}">
+      <i class="bi {% if n.notification_type == 'gpa_warning' %}bi-exclamation-triangle
+        {% elif n.notification_type == 'result_published' %}bi-send-check
+        {% elif n.notification_type == 'complaint_update' %}bi-chat-dots
+        {% elif n.notification_type == 'account_approval' %}bi-person-check
+        {% elif n.notification_type == 'account_rejection' %}bi-person-x
+        {% elif n.notification_type == 'password_changed' %}bi-key
+        {% else %}bi-bell{% endif %}"></i>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px;">
+        <span style="font-size:14px;font-weight:{% if not n.is_read %}700{% else %}500{% endif %};color:#1A202C;">{{ n.title }}</span>
+        <span style="font-size:11px;color:#718096;white-space:nowrap;">{{ n.created_at|date:"d M Y, H:i" }}</span>
+      </div>
+      <p style="font-size:13px;color:#4A5568;margin:0;line-height:1.5;">{{ n.message }}</p>
+      {% if not n.is_read %}<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#0D7377;margin-top:6px;"></span>{% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="empty-state" style="padding:60px;">
+    <div class="empty-state-icon"><i class="bi bi-bell-slash"></i></div>
+    <h5>No Notifications</h5>
+    <p>You're all caught up! Notifications will appear here.</p>
+  </div>
+  {% endfor %}
+  {% if page_obj.has_other_pages %}
+  <div style="padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #E2E8F0;">
+    <span style="font-size:13px;color:#718096;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-secondary">← Prev</a>{% endif %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-secondary">Next →</a>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

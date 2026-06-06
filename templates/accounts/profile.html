@@ -1,0 +1,53 @@
+{% extends "base/base.html" %}
+{% block title %}Profile — ERMS{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block sidebar_nav %}
+{% if request.user.role == 'admin' %}{% include "base/sidebar_admin.html" %}
+{% elif request.user.role == 'lecturer' %}{% include "base/sidebar_lecturer.html" %}
+{% elif request.user.role == 'student' %}{% include "base/sidebar_student.html" %}
+{% else %}{% include "base/sidebar_parent.html" %}{% endif %}
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="erms-card text-center">
+      <div class="erms-card-body" style="padding:32px;">
+        {% if request.user.profile_picture %}
+          <img src="{{ request.user.profile_picture.url }}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:4px solid #E2E8F0;margin-bottom:16px;"/>
+        {% else %}
+          <div style="width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#1B2B5A,#0D7377);display:flex;align-items:center;justify-content:center;font-size:40px;color:white;margin:0 auto 16px;">{{ request.user.first_name|first|default:request.user.username|first|upper }}</div>
+        {% endif %}
+        <h5 style="font-weight:800;color:#1B2B5A;margin-bottom:4px;">{{ request.user.get_full_name|default:request.user.username }}</h5>
+        <div class="badge-status badge-{{ request.user.role }}" style="margin-bottom:8px;">{{ request.user.get_role_display }}</div>
+        <div style="font-size:13px;color:#718096;">{{ request.user.email }}</div>
+        {% if request.user.is_student_user and request.user.student_profile %}
+        <div style="margin-top:16px;padding:12px;background:#F5F7FA;border-radius:8px;font-size:13px;">
+          <div style="font-weight:600;color:#1B2B5A;">{{ request.user.student_profile.matric_number }}</div>
+          <div style="color:#718096;">{{ request.user.student_profile.department }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{% url 'accounts:change_password' %}" class="btn-erms-outline w-100 justify-content-center mt-3"><i class="bi bi-key me-1"></i>Change Password</a>
+  </div>
+  <div class="col-lg-8">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-person-gear me-2"></i>Edit Profile</h6></div>
+      <div class="erms-card-body">
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+          <div class="row g-3">
+            <div class="col-6"><label class="erms-form-label">First Name</label>{{ form.first_name }}<div class="text-danger" style="font-size:12px;">{{ form.first_name.errors }}</div></div>
+            <div class="col-6"><label class="erms-form-label">Last Name</label>{{ form.last_name }}<div class="text-danger" style="font-size:12px;">{{ form.last_name.errors }}</div></div>
+            <div class="col-6"><label class="erms-form-label">Email</label>{{ form.email }}</div>
+            <div class="col-6"><label class="erms-form-label">Phone Number</label>{{ form.phone_number }}</div>
+            <div class="col-6"><label class="erms-form-label">Date of Birth</label>{{ form.date_of_birth }}</div>
+            <div class="col-12"><label class="erms-form-label">Address</label>{{ form.address }}</div>
+            <div class="col-12"><label class="erms-form-label">Profile Picture</label>{{ form.profile_picture }}</div>
+            <div class="col-12"><button type="submit" class="btn-erms-primary"><i class="bi bi-floppy me-1"></i>Save Changes</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

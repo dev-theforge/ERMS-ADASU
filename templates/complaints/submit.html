@@ -1,0 +1,34 @@
+{% extends "base/base.html" %}
+{% block title %}File Complaint — ERMS{% endblock %}
+{% block page_title %}File a Complaint{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_student.html" %}{% endblock %}
+{% block content %}
+<div style="max-width:620px;margin:0 auto;">
+  <div class="erms-card">
+    <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-chat-left-text me-2"></i>Submit a Result Complaint</h6></div>
+    <div class="erms-card-body">
+      <form method="post">{% csrf_token %}
+        <div class="mb-4">
+          <label class="erms-form-label">Select Published Result *</label>
+          <select name="result" class="erms-form-control" required>
+            <option value="">Choose a result to dispute...</option>
+            {% for r in results %}<option value="{{ r.pk }}" {% if request.GET.result == r.pk|stringformat:"s" %}selected{% endif %}>{{ r.course.code }} — {{ r.course.title }} | Score: {{ r.score }} ({{ r.grade }}) | {{ r.semester }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="erms-form-label">Subject *</label>
+          <input type="text" name="subject" class="erms-form-control" placeholder="Brief description of your complaint" maxlength="300" required/>
+        </div>
+        <div class="mb-4">
+          <label class="erms-form-label">Description *</label>
+          <textarea name="description" class="erms-form-control" rows="5" placeholder="Provide detailed information about your complaint, including the expected score or any supporting information..." required style="resize:vertical;"></textarea>
+        </div>
+        <div style="background:#FFF8E1;border:1px solid #FFD54F;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#795548;">
+          <i class="bi bi-info-circle me-2"></i>Only published results can be disputed. Your complaint will be reviewed by the administrator.
+        </div>
+        <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-send me-1"></i>Submit Complaint</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

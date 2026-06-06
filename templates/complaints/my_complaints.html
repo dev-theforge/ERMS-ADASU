@@ -1,0 +1,30 @@
+{% extends "base/base.html" %}
+{% block title %}My Complaints — ERMS{% endblock %}
+{% block page_title %}My Complaints{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_student.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h4>My Complaints</h4><p>Track your submitted result disputes</p></div>
+  <a href="{% url 'complaints:submit' %}" class="btn-erms-primary"><i class="bi bi-plus me-1"></i>New Complaint</a>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Subject</th><th>Course</th><th>Filed</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for c in complaints %}
+      <tr>
+        <td><strong>{{ c.subject|truncatechars:50 }}</strong></td>
+        <td>{{ c.result.course.code }}</td>
+        <td>{{ c.created_at|date:"d M Y" }}</td>
+        <td><span class="badge-status badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td><a href="{% url 'complaints:detail' c.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5"><div class="empty-state" style="padding:30px;"><i class="bi bi-chat-square" style="font-size:32px;color:#CBD5E0;"></i><p class="mt-2">No complaints filed</p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

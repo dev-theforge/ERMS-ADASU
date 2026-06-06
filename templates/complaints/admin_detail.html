@@ -1,0 +1,82 @@
+{% extends "base/base.html" %}
+{% block title %}Review Complaint #{{ complaint.pk }} — ERMS{% endblock %}
+{% block page_title %}Review Complaint{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="erms-card mb-4">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">{{ complaint.subject }}</h6>
+        <span class="badge-status badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+      </div>
+      <div class="erms-card-body">
+        <div class="row g-3 mb-3">
+          <div class="col-6"><span class="erms-form-label">Student:</span><div><strong>{{ complaint.student.user.get_full_name }}</strong> ({{ complaint.student.matric_number }})</div></div>
+          <div class="col-6"><span class="erms-form-label">Course:</span><div>{{ complaint.result.course.code }} — {{ complaint.result.course.title }}</div></div>
+          <div class="col-6"><span class="erms-form-label">Score on Record:</span><div><strong>{{ complaint.result.score }}</strong> ({{ complaint.result.grade }})</div></div>
+          <div class="col-6"><span class="erms-form-label">Semester:</span><div>{{ complaint.result.semester }}</div></div>
+        </div>
+        <hr/>
+        <h6 style="font-size:13px;font-weight:700;margin-bottom:8px;">Student Description:</h6>
+        <p style="font-size:14px;color:#4A5568;line-height:1.7;">{{ complaint.description }}</p>
+      </div>
+    </div>
+    <!-- Admin Action Form -->
+    <div class="erms-card mb-4">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-shield-check me-2"></i>Admin Action</h6></div>
+      <div class="erms-card-body">
+        <form method="post">{% csrf_token %}
+          <input type="hidden" name="action" value="update"/>
+          <div class="mb-3"><label class="erms-form-label">Update Status</label>
+            <select name="status" class="erms-form-control">
+              <option value="pending" {% if complaint.status == 'pending' %}selected{% endif %}>Pending</option>
+              <option value="under_review" {% if complaint.status == 'under_review' %}selected{% endif %}>Under Review</option>
+              <option value="resolved" {% if complaint.status == 'resolved' %}selected{% endif %}>Resolved</option>
+              <option value="rejected" {% if complaint.status == 'rejected' %}selected{% endif %}>Rejected</option>
+            </select></div>
+          <div class="mb-4"><label class="erms-form-label">Response to Student</label>
+            <textarea name="admin_response" class="erms-form-control" rows="4" placeholder="Write your official response...">{{ complaint.admin_response }}</textarea></div>
+          <button type="submit" class="btn-erms-primary"><i class="bi bi-check2 me-1"></i>Update Complaint</button>
+        </form>
+      </div>
+    </div>
+    <!-- Comments -->
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-chat me-2"></i>Comments</h6></div>
+      <div class="erms-card-body p-0">
+        {% for comment in comments %}
+        <div style="padding:14px 16px;border-bottom:1px solid #E2E8F0;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:13px;font-weight:600;">{{ comment.author.get_full_name }} <span style="font-size:11px;font-weight:400;color:#718096;">({{ comment.author.get_role_display }})</span></span>
+            <span style="font-size:11px;color:#718096;">{{ comment.created_at|timesince }} ago</span>
+          </div>
+          <p style="font-size:14px;color:#4A5568;margin:0;">{{ comment.content }}</p>
+        </div>
+        {% empty %}
+        <div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No comments yet</div>
+        {% endfor %}
+        <div style="padding:16px;">
+          <form method="post">{% csrf_token %}
+            <div class="mb-3"><textarea name="comment" class="erms-form-control" rows="2" placeholder="Add internal comment..."></textarea></div>
+            <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="bi bi-chat-text me-1"></i>Add Comment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title">Complaint Info</h6></div>
+      <div class="erms-card-body">
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;">
+          <div><span style="color:#718096;">Filed:</span><strong style="float:right;">{{ complaint.created_at|date:"d M Y H:i" }}</strong></div>
+          <div><span style="color:#718096;">Updated:</span><strong style="float:right;">{{ complaint.updated_at|date:"d M Y H:i" }}</strong></div>
+          {% if complaint.reviewed_by %}<div><span style="color:#718096;">Reviewed by:</span><strong style="float:right;">{{ complaint.reviewed_by.get_full_name }}</strong></div>{% endif %}
+          {% if complaint.resolved_at %}<div><span style="color:#718096;">Resolved:</span><strong style="float:right;">{{ complaint.resolved_at|date:"d M Y" }}</strong></div>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

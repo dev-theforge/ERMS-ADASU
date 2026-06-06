@@ -1,0 +1,50 @@
+{% extends "base/base.html" %}
+{% block title %}GPA Distribution — ERMS{% endblock %}
+{% block page_title %}GPA Distribution{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-5"><label class="erms-form-label">Semester</label>
+        <select name="semester" class="erms-form-control"><option value="">Select Semester…</option>
+        {% for s in semesters %}<option value="{{ s.pk }}" {% if selected == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-3"><button type="submit" class="btn-erms-primary w-100">Generate</button></div>
+    </form>
+  </div>
+</div>
+{% if data %}
+<div class="row g-4">
+  <div class="col-md-7">
+    <div class="erms-card"><div class="erms-card-header"><h6 class="erms-card-title">GPA Distribution — {{ data.semester }}</h6><span style="font-size:13px;color:#718096;">{{ data.total }} students</span></div>
+      <div class="erms-card-body"><canvas id="distChart" height="200"></canvas></div>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="erms-card"><div class="erms-card-header"><h6 class="erms-card-title">GPA Bands</h6></div>
+      <div style="overflow-x:auto;"><table class="erms-table">
+        <thead><tr><th>Band</th><th>Count</th><th>%</th></tr></thead>
+        <tbody>
+        {% for band, count in data.distribution.items %}
+        <tr>
+          <td><strong>{{ band }}</strong></td>
+          <td>{{ count }}</td>
+          <td>{% if data.total %}{% widthratio count data.total 100 %}%{% else %}0%{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+{% if data %}
+<script>
+const dist = {{ data.distribution|safe }};
+renderBarChart('distChart', Object.keys(dist), Object.values(dist), 'Students');
+</script>
+{% endif %}
+{% endblock %}

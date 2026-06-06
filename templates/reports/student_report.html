@@ -1,0 +1,75 @@
+{% extends "base/base.html" %}
+{% block title %}Student Report — ERMS{% endblock %}
+{% block page_title %}Student Report{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'reports:home' %}">Reports</a></li><li class="breadcrumb-item active">Student</li>{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-search me-2"></i>Search Student</h6></div>
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6"><label class="erms-form-label">Matric Number</label>
+        <input type="text" name="matric" value="{{ search }}" class="erms-form-control" placeholder="e.g. ADU/2021/0001"/></div>
+      <div class="col-md-3"><button type="submit" class="btn-erms-primary w-100"><i class="bi bi-search me-1"></i>Search</button></div>
+    </form>
+  </div>
+</div>
+{% if student %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header">
+    <div>
+      <h6 class="erms-card-title">{{ student.user.get_full_name }}</h6>
+      <div style="font-size:12px;color:#718096;">{{ student.matric_number }} · {{ student.department }} · {{ student.get_level_display }}</div>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="?matric={{ search }}&export=pdf" class="btn-erms-primary"><i class="bi bi-file-earmark-pdf me-1"></i>PDF Transcript</a>
+      <a href="?matric={{ search }}&export=csv" class="btn-erms-outline"><i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV</a>
+    </div>
+  </div>
+  <div class="erms-card-body">
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-teal"><i class="bi bi-award"></i></div><div class="stat-body"><div class="stat-value">{% if cgpa %}{{ cgpa.cgpa }}{% else %}—{% endif %}</div><div class="stat-label">CGPA</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-navy"><i class="bi bi-stack"></i></div><div class="stat-body"><div class="stat-value">{% if cgpa %}{{ cgpa.total_accumulated_credit_units }}{% else %}0{% endif %}</div><div class="stat-label">Total CU</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-gold"><i class="bi bi-clipboard-data"></i></div><div class="stat-body"><div class="stat-value">{{ results|length }}</div><div class="stat-label">Courses Taken</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-success"><i class="bi bi-check-circle"></i></div><div class="stat-body"><div class="stat-value">{% for r in results %}{% if r.grade != 'F' %}1{% endif %}{% endfor %}</div><div class="stat-label">Courses Passed</div></div></div></div>
+    </div>
+  </div>
+</div>
+<div class="erms-card mb-4">
+  <div class="erms-card-header"><h6 class="erms-card-title">GPA by Semester</h6></div>
+  <div class="erms-card-body"><canvas id="gpaChart" height="70"></canvas></div>
+</div>
+<div class="erms-card">
+  <div class="erms-card-header"><h6 class="erms-card-title">Full Academic Record</h6></div>
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Semester</th><th>Course Code</th><th>Course Title</th><th>CU</th><th>Score</th><th>Grade</th><th>GP</th><th>QP</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+      <tr>
+        <td>{{ r.semester }}</td>
+        <td><strong>{{ r.course.code }}</strong></td>
+        <td>{{ r.course.title }}</td>
+        <td class="text-center">{{ r.course.credit_units }}</td>
+        <td class="text-center"><strong>{{ r.score }}</strong></td>
+        <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td class="text-center">{{ r.grade_point }}</td>
+        <td class="text-center">{{ r.quality_points }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="text-center py-4 text-muted">No published results found</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% elif search %}
+<div class="erms-card"><div class="empty-state" style="padding:60px;"><div class="empty-state-icon"><i class="bi bi-person-x"></i></div><h5>Student Not Found</h5><p>No student found with matric number "{{ search }}"</p></div></div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+const gpaData = [{% for g in gpa_records %}{"label":"{{ g.semester|escapejs }}","gpa":{{ g.gpa }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+if (gpaData.length) renderGPAChart('gpaChart', gpaData.map(r=>r.label), gpaData.map(r=>r.gpa));
+</script>
+{% endblock %}

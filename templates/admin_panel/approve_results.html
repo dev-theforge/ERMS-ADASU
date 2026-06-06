@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% block title %}Approve Results — ERMS{% endblock %}
+{% block page_title %}Approve Results{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-6"><label class="erms-form-label">Select Semester</label>
+        <select name="semester" class="erms-form-control">
+          <option value="">Choose semester…</option>
+          {% for s in semesters %}<option value="{{ s.pk }}" {% if selected_semester and selected_semester.pk == s.pk %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-3"><button type="submit" class="btn-erms-primary w-100">Load Results</button></div>
+    </form>
+  </div>
+</div>
+{% if selected_semester %}
+<div class="erms-card">
+  <div class="erms-card-header">
+    <h6 class="erms-card-title"><i class="bi bi-check2-circle me-2"></i>Submitted Results — {{ selected_semester }}</h6>
+    <span style="font-size:13px;color:#718096;">{{ results|length }} result(s) awaiting approval</span>
+  </div>
+  {% if results %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="semester_id" value="{{ selected_semester.pk }}"/>
+    <div style="overflow-x:auto;">
+      <table class="erms-table">
+        <thead><tr>
+          <th><input type="checkbox" id="selectAll" class="form-check-input"/></th>
+          <th>Student</th><th>Course</th><th>Score</th><th>Grade</th><th>Lecturer</th><th>Submitted</th>
+        </tr></thead>
+        <tbody>
+        {% for r in results %}
+        <tr>
+          <td><input type="checkbox" name="result_ids" value="{{ r.pk }}" class="row-check form-check-input"/></td>
+          <td><strong>{{ r.student.user.get_full_name }}</strong><div style="font-size:11px;color:#718096;">{{ r.student.matric_number }}</div></td>
+          <td>{{ r.course.code }}</td>
+          <td class="text-center"><strong>{{ r.score }}</strong></td>
+          <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+          <td>{% if r.lecturer %}{{ r.lecturer.user.get_full_name }}{% else %}—{% endif %}</td>
+          <td>{{ r.submitted_at|date:"d M H:i"|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="erms-card-body d-flex gap-3 border-top">
+      <button type="submit" name="action" value="approve" class="btn-erms-teal"><i class="bi bi-check2-all me-1"></i>Approve Selected</button>
+      <button type="submit" name="action" value="reject" class="btn btn-outline-danger" data-confirm="Reject selected results?"><i class="bi bi-x-circle me-1"></i>Reject Selected</button>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state" style="padding:60px;"><div class="empty-state-icon"><i class="bi bi-check-all"></i></div><h5>No Pending Results</h5><p>No submitted results awaiting approval for this semester</p></div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

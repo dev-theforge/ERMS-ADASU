@@ -1,0 +1,56 @@
+{% extends "base/base.html" %}
+{% block title %}Enter Scores — {{ course.code }}{% endblock %}
+{% block page_title %}Enter Scores{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_lecturer.html" %}{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'lecturer:dashboard' %}">Dashboard</a></li><li class="breadcrumb-item active">Enter Scores</li>{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h4>{{ course.code }} — {{ course.title }}</h4>
+    <p>{{ semester }} · {{ course.credit_units }} credit units</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'lecturer:submit_results' course.pk semester.pk %}" class="btn-erms-teal" data-confirm="Submit all draft results for this course for admin approval?"><i class="bi bi-send me-1"></i>Submit for Approval</a>
+    <a href="{% url 'lecturer:course_stats' course.pk semester.pk %}" class="btn-erms-outline"><i class="bi bi-bar-chart me-1"></i>Statistics</a>
+  </div>
+</div>
+
+<div class="erms-card">
+  <div class="erms-card-header">
+    <h6 class="erms-card-title"><i class="bi bi-pencil-square me-2"></i>Score Entry — {{ rows|length }} Students</h6>
+    <span style="font-size:12px;color:#718096;">Scores must be between 0 and 100. Published/approved results cannot be changed.</span>
+  </div>
+  <form method="post">{% csrf_token %}
+    <div style="overflow-x:auto;">
+      <table class="erms-table">
+        <thead><tr><th>Matric No.</th><th>Student Name</th><th>Score (0–100)</th><th>Grade</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for row in rows %}
+        <tr>
+          <td><strong>{{ row.student.matric_number }}</strong></td>
+          <td>{{ row.student.user.get_full_name }}</td>
+          <td style="width:160px;">
+            {% if row.result and row.result.status in 'published,approved' %}
+              <input type="number" value="{{ row.result.score }}" class="erms-form-control" disabled style="width:120px;background:#F5F7FA;"/>
+            {% else %}
+              <input type="number" name="score_{{ row.student.pk }}" value="{{ row.result.score|default:'' }}" min="0" max="100" step="0.01" class="erms-form-control" data-score placeholder="e.g. 75" style="width:120px;"/>
+            {% endif %}
+          </td>
+          <td class="text-center">{% if row.result %}<span class="badge-status grade-{{ row.result.grade }}">{{ row.result.grade|default:"—" }}</span>{% else %}—{% endif %}</td>
+          <td>{% if row.result %}<span class="badge-status badge-{{ row.result.status }}">{{ row.result.get_status_display }}</span>{% else %}<span class="badge-status badge-draft">Not Entered</span>{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5"><div class="empty-state" style="padding:30px;"><i class="bi bi-people" style="font-size:32px;color:#CBD5E0;"></i><p class="mt-2">No students enrolled in this course for this semester</p></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if rows %}
+    <div class="erms-card-body d-flex justify-content-between align-items-center border-top">
+      <span style="font-size:13px;color:#718096;">All scores saved as <strong>Draft</strong> until submitted for approval</span>
+      <button type="submit" class="btn-erms-primary"><i class="bi bi-floppy me-1"></i>Save Scores</button>
+    </div>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

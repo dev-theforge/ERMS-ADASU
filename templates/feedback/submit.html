@@ -1,0 +1,62 @@
+{% extends "base/base.html" %}
+{% block title %}Submit Feedback — ERMS{% endblock %}
+{% block page_title %}Submit Feedback{% endblock %}
+{% block sidebar_nav %}
+{% if request.user.role == 'admin' %}{% include "base/sidebar_admin.html" %}
+{% elif request.user.role == 'lecturer' %}{% include "base/sidebar_lecturer.html" %}
+{% elif request.user.role == 'student' %}{% include "base/sidebar_student.html" %}
+{% else %}{% include "base/sidebar_parent.html" %}{% endif %}
+{% endblock %}
+{% block content %}
+<div style="max-width:580px;margin:0 auto;">
+  <div class="erms-card">
+    <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-star me-2"></i>System Feedback & Survey</h6></div>
+    <div class="erms-card-body">
+      <p style="font-size:14px;color:#718096;margin-bottom:24px;">Your feedback helps us improve the ERMS portal. All responses are anonymous to administrators.</p>
+      <form method="post">{% csrf_token %}
+        <div class="mb-4">
+          <label class="erms-form-label">Category *</label>
+          <select name="category" class="erms-form-control" required>
+            {% for val, label in categories %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="erms-form-label">Subject *</label>
+          <input type="text" name="subject" class="erms-form-control" placeholder="Brief subject" maxlength="300" required/>
+        </div>
+        <div class="mb-4">
+          <label class="erms-form-label">Message *</label>
+          <textarea name="message" class="erms-form-control" rows="5" placeholder="Share your experience, suggestions or concerns..." required style="resize:vertical;"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="erms-form-label">Overall Rating</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            {% for i in "12345" %}
+            <label style="cursor:pointer;">
+              <input type="radio" name="rating" value="{{ i }}" style="display:none;" class="star-radio"/>
+              <div class="star-btn" data-val="{{ i }}" style="width:48px;height:48px;border:2px solid #E2E8F0;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .2s;">
+                {% if i == "1" %}😞{% elif i == "2" %}😐{% elif i == "3" %}🙂{% elif i == "4" %}😊{% else %}🤩{% endif %}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <div style="font-size:12px;color:#718096;margin-top:6px;">1 = Very Poor, 5 = Excellent (optional)</div>
+        </div>
+        <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-send me-1"></i>Submit Feedback</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('.star-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const val = this.dataset.val;
+    document.querySelectorAll('.star-btn').forEach(b => { b.style.borderColor='#E2E8F0'; b.style.background='white'; });
+    this.style.borderColor = '#0D7377'; this.style.background = '#F0FDFD';
+    document.querySelector(`input[name="rating"][value="${val}"]`).checked = true;
+  });
+});
+</script>
+{% endblock %}

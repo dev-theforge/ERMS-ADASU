@@ -1,0 +1,37 @@
+{% extends "base/base.html" %}
+{% block title %}Department Report — ERMS{% endblock %}
+{% block page_title %}Department Report{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-5"><label class="erms-form-label">Department</label>
+        <select name="dept" class="erms-form-control"><option value="">Select Department…</option>
+        {% for d in departments %}<option value="{{ d.pk }}" {% if selected_dept == d.pk|stringformat:"s" %}selected{% endif %}>{{ d.code }} — {{ d.name }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="erms-form-label">Session (optional)</label>
+        <select name="session" class="erms-form-control"><option value="">All Sessions</option>
+        {% for s in sessions %}<option value="{{ s.pk }}" {% if selected_session == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-2"><button type="submit" class="btn-erms-primary w-100">Generate</button></div>
+    </form>
+  </div>
+</div>
+{% if data %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header">
+    <div><h6 class="erms-card-title">{{ data.dept.name }}</h6><div style="font-size:12px;color:#718096;">{{ data.dept.faculty }}</div></div>
+    <a href="?dept={{ selected_dept }}&session={{ selected_session }}&export=csv" class="btn-erms-outline"><i class="bi bi-download me-1"></i>Export CSV</a>
+  </div>
+  <div class="erms-card-body">
+    <div class="row g-3">
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-navy"><i class="bi bi-people"></i></div><div class="stat-body"><div class="stat-value">{{ data.total_students }}</div><div class="stat-label">Total Students</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-teal"><i class="bi bi-award"></i></div><div class="stat-body"><div class="stat-value">{{ data.avg_cgpa }}</div><div class="stat-label">Avg CGPA</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-success"><i class="bi bi-check-circle"></i></div><div class="stat-body"><div class="stat-value">{{ data.pass_rate }}%</div><div class="stat-label">Pass Rate</div></div></div></div>
+      <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-danger"><i class="bi bi-x-circle"></i></div><div class="stat-body"><div class="stat-value">{{ data.fail_count }}</div><div class="stat-label">Failed Results</div></div></div></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

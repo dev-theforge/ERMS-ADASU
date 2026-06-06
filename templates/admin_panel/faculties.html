@@ -1,0 +1,47 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block title %}Faculties — ERMS{% endblock %}
+{% block page_title %}Manage Faculties{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li><li class="breadcrumb-item active">Faculties</li>{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-building me-2"></i>All Faculties</h6></div>
+      <div style="overflow-x:auto;">
+        <table class="erms-table">
+          <thead><tr><th>#</th><th>Code</th><th>Name</th><th>Departments</th><th>Status</th><th>Created</th></tr></thead>
+          <tbody>
+          {% for f in faculties %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td><strong>{{ f.code }}</strong></td>
+            <td>{{ f.name }}</td>
+            <td class="text-center">{{ f.dept_count }}</td>
+            <td><span class="badge-status {% if f.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if f.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+            <td>{{ f.created_at|date:"d M Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="6" class="text-center py-4 text-muted">No faculties yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-plus-circle me-2"></i>Add Faculty</h6></div>
+      <div class="erms-card-body">
+        <form method="post">{% csrf_token %}
+          <div class="mb-3"><label class="erms-form-label">Faculty Name *</label><input type="text" name="name" class="erms-form-control" placeholder="e.g. Faculty of Science" required/></div>
+          <div class="mb-3"><label class="erms-form-label">Code *</label><input type="text" name="code" class="erms-form-control" placeholder="e.g. FOS" maxlength="10" required/></div>
+          <div class="mb-4"><label class="erms-form-label">Description</label><textarea name="description" class="erms-form-control" rows="3" placeholder="Optional description"></textarea></div>
+          <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-plus me-1"></i>Create Faculty</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

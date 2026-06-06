@@ -1,0 +1,73 @@
+{% extends "base/base.html" %}
+{% block title %}Course Report — ERMS{% endblock %}
+{% block page_title %}Course Report{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header"><h6 class="erms-card-title">Filter Course</h6></div>
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-4"><label class="erms-form-label">Course</label>
+        <select name="course" class="erms-form-control"><option value="">Select Course…</option>
+        {% for c in courses %}<option value="{{ c.pk }}" {% if selected_course == c.pk|stringformat:"s" %}selected{% endif %}>{{ c.code }} — {{ c.title }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="erms-form-label">Semester</label>
+        <select name="semester" class="erms-form-control"><option value="">Select Semester…</option>
+        {% for s in semesters %}<option value="{{ s.pk }}" {% if selected_semester == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-2"><button type="submit" class="btn-erms-primary w-100">Generate</button></div>
+    </form>
+  </div>
+</div>
+{% if data %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-navy"><i class="bi bi-people"></i></div><div class="stat-body"><div class="stat-value">{{ data.total }}</div><div class="stat-label">Total Entries</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-teal"><i class="bi bi-calculator"></i></div><div class="stat-body"><div class="stat-value">{{ data.avg_score }}</div><div class="stat-label">Avg Score</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-success"><i class="bi bi-check-circle"></i></div><div class="stat-body"><div class="stat-value">{{ data.pass_count }}</div><div class="stat-label">Passed ({{ data.pass_rate }}%)</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-danger"><i class="bi bi-x-circle"></i></div><div class="stat-body"><div class="stat-value">{{ data.fail_count }}</div><div class="stat-label">Failed</div></div></div></div>
+</div>
+<div class="row g-4 mb-4">
+  <div class="col-md-6"><div class="erms-card"><div class="erms-card-header"><h6 class="erms-card-title">Grade Distribution</h6></div><div class="erms-card-body"><canvas id="gradeChart" height="200"></canvas></div></div></div>
+  <div class="col-md-6">
+    <div class="erms-card h-100"><div class="erms-card-header"><h6 class="erms-card-title">Grade Breakdown</h6></div>
+      <div style="overflow-x:auto;"><table class="erms-table">
+        <thead><tr><th>Grade</th><th>Count</th><th>%</th></tr></thead>
+        <tbody>
+        {% for grade, count in data.grade_dist.items %}
+        <tr><td><span class="badge-status grade-{{ grade }}">{{ grade }}</span></td><td>{{ count }}</td>
+          <td>{% widthratio count data.total 100 %}%</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+<div class="erms-card">
+  <div class="erms-card-header"><h6 class="erms-card-title">{{ data.course.code }} — Student Results</h6></div>
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Matric No.</th><th>Name</th><th>Score</th><th>Grade</th><th>Grade Point</th></tr></thead>
+      <tbody>
+      {% for r in data.results %}
+      <tr>
+        <td><strong>{{ r.student.matric_number }}</strong></td>
+        <td>{{ r.student.user.get_full_name }}</td>
+        <td class="text-center"><strong>{{ r.score }}</strong></td>
+        <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td class="text-center">{{ r.grade_point }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+{% if data %}
+<script>
+const grades = {{ data.grade_dist|safe }};
+renderGradeChart('gradeChart', Object.keys(grades), Object.values(grades));
+</script>
+{% endif %}
+{% endblock %}

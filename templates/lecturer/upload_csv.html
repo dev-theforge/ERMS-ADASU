@@ -1,0 +1,88 @@
+{% extends "base/base.html" %}
+{% block title %}Upload CSV — ERMS{% endblock %}
+{% block page_title %}Upload CSV Scores{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_lecturer.html" %}{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'lecturer:dashboard' %}">Dashboard</a></li><li class="breadcrumb-item active">Upload CSV</li>{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h4>Bulk Score Upload</h4><p>Upload scores via CSV for one or multiple courses</p></div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'lecturer:download_template' 'single' %}" class="btn-erms-outline"><i class="bi bi-download me-1"></i>Single Template</a>
+    <a href="{% url 'lecturer:download_template' 'multi' %}" class="btn-erms-outline"><i class="bi bi-download me-1"></i>Multi Template</a>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-upload me-2"></i>Upload File</h6></div>
+      <div class="erms-card-body">
+        <form method="post" enctype="multipart/form-data">{% csrf_token %}
+          <div class="mb-3">
+            <label class="erms-form-label">Upload Type</label>
+            <div class="d-flex gap-3">
+              <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:14px;">
+                <input type="radio" name="upload_type" value="single" checked id="singleType"/> Single Course
+              </label>
+              <label class="d-flex align-items-center gap-2" style="cursor:pointer;font-size:14px;">
+                <input type="radio" name="upload_type" value="multi" id="multiType"/> Multiple Courses
+              </label>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="erms-form-label">Semester *</label>
+            <select name="semester" class="erms-form-control" required>
+              <option value="">Select semester...</option>
+              {% for s in semesters %}<option value="{{ s.pk }}" {% if current_sem and s.pk == current_sem.pk %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-3" id="courseField">
+            <label class="erms-form-label">Course *</label>
+            <select name="course" class="erms-form-control">
+              <option value="">Select course...</option>
+              {% for ca in courses %}<option value="{{ ca.course.pk }}">{{ ca.course.code }} — {{ ca.course.title }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="erms-form-label">CSV File *</label>
+            <input type="file" name="csv_file" accept=".csv" class="erms-form-control" required/>
+            <div style="font-size:12px;color:#718096;margin-top:4px;">Only .csv files. Max 5MB.</div>
+          </div>
+          <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-upload me-2"></i>Upload and Process</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="erms-card mb-4">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-info-circle me-2"></i>Format Guide</h6></div>
+      <div class="erms-card-body">
+        <p style="font-size:13px;font-weight:600;color:#1B2B5A;margin-bottom:8px;">Single Course CSV:</p>
+        <div style="background:#F5F7FA;border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:#1A202C;margin-bottom:16px;">matric_no,score<br/>ADU/2021/0001,75<br/>ADU/2021/0002,68<br/>ADU/2021/0003,82</div>
+        <p style="font-size:13px;font-weight:600;color:#1B2B5A;margin-bottom:8px;">Multi-Course CSV:</p>
+        <div style="background:#F5F7FA;border-radius:8px;padding:12px;font-family:monospace;font-size:12px;color:#1A202C;">course_code,matric_no,score<br/>CSC101,ADU/2021/0001,75<br/>MTH101,ADU/2021/0002,82</div>
+      </div>
+    </div>
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-shield-check me-2"></i>Validation Rules</h6></div>
+      <div class="erms-card-body">
+        <ul style="font-size:13px;color:#4A5568;padding-left:18px;margin:0;line-height:2;">
+          <li>Matric number must exist in system</li>
+          <li>Course code must be valid and assigned to you</li>
+          <li>Scores must be between 0 and 100</li>
+          <li>Duplicates will update existing draft scores</li>
+          <li>Published/approved results cannot be overwritten</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelectorAll('input[name="upload_type"]').forEach(r => {
+  r.addEventListener('change', function() {
+    document.getElementById('courseField').style.display = this.value === 'single' ? 'block' : 'none';
+  });
+});
+</script>
+{% endblock %}

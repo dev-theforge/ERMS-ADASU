@@ -1,0 +1,58 @@
+{% extends "base/base.html" %}
+{% block title %}Complaints — Admin ERMS{% endblock %}
+{% block page_title %}Complaint Management{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-navy"><i class="bi bi-chat-dots"></i></div><div class="stat-body"><div class="stat-value">{{ stats.total }}</div><div class="stat-label">Total</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-warning"><i class="bi bi-clock"></i></div><div class="stat-body"><div class="stat-value">{{ stats.pending }}</div><div class="stat-label">Pending</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-info"><i class="bi bi-eye"></i></div><div class="stat-body"><div class="stat-value">{{ stats.under_review }}</div><div class="stat-label">Under Review</div></div></div></div>
+  <div class="col-6 col-md-3"><div class="stat-card"><div class="stat-icon stat-icon-success"><i class="bi bi-check-circle"></i></div><div class="stat-body"><div class="stat-value">{{ stats.resolved }}</div><div class="stat-label">Resolved</div></div></div></div>
+</div>
+<div class="erms-card mb-3">
+  <div class="erms-card-body">
+    <form method="get" class="d-flex gap-3 align-items-end">
+      <div><label class="erms-form-label">Filter by Status</label>
+        <select name="status" class="erms-form-control">
+          <option value="">All</option>
+          <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+          <option value="under_review" {% if status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
+          <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved</option>
+          <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+        </select></div>
+      <button type="submit" class="btn-erms-primary">Filter</button>
+    </form>
+  </div>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>#</th><th>Student</th><th>Course</th><th>Subject</th><th>Filed</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+      {% for c in page_obj %}
+      <tr>
+        <td>{{ c.pk }}</td>
+        <td><strong>{{ c.student.user.get_full_name }}</strong><div style="font-size:11px;color:#718096;">{{ c.student.matric_number }}</div></td>
+        <td>{{ c.result.course.code }}</td>
+        <td>{{ c.subject|truncatechars:45 }}</td>
+        <td>{{ c.created_at|date:"d M Y" }}</td>
+        <td><span class="badge-status badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+        <td><a href="{% url 'complaints:admin_detail' c.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">Review</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="text-center py-4 text-muted">No complaints found</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj.has_other_pages %}
+  <div class="erms-card-body d-flex justify-content-between">
+    <span class="text-muted" style="font-size:13px;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="d-flex gap-2">
+      {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}" class="btn btn-sm btn-outline-secondary">← Prev</a>{% endif %}
+      {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}" class="btn btn-sm btn-outline-secondary">Next →</a>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

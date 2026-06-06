@@ -1,0 +1,53 @@
+{% extends "base/base.html" %}
+{% block title %}Ward History — ERMS{% endblock %}
+{% block page_title %}Ward Academic History{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_parent.html" %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h4>{{ ward.user.get_full_name }}</h4>
+    <p>{{ ward.matric_number }} · {{ ward.department }}</p>
+  </div>
+  {% if cgpa %}<div style="text-align:right;"><div style="font-size:32px;font-weight:900;color:#0D7377;">{{ cgpa.cgpa }}</div><div style="font-size:11px;color:#718096;text-transform:uppercase;letter-spacing:1px;">CGPA</div></div>{% endif %}
+</div>
+{% if gpa_records %}
+<div class="erms-card mb-4"><div class="erms-card-header"><h6 class="erms-card-title">GPA Trend</h6></div>
+  <div class="erms-card-body"><canvas id="gpaTrend" height="80"></canvas></div></div>
+{% endif %}
+<div class="erms-card mb-4">
+  <div class="erms-card-header"><h6 class="erms-card-title">GPA by Semester</h6></div>
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Semester</th><th>Credit Units</th><th>Quality Points</th><th>GPA</th></tr></thead>
+      <tbody>
+      {% for g in gpa_records %}
+      <tr><td>{{ g.semester }}</td><td class="text-center">{{ g.total_credit_units }}</td><td class="text-center">{{ g.total_quality_points }}</td>
+        <td class="text-center"><span style="font-size:20px;font-weight:900;color:#0D7377;">{{ g.gpa }}</span></td></tr>
+      {% empty %}<tr><td colspan="4" class="text-center py-4 text-muted">No GPA records yet</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if complaints %}
+<div class="erms-card">
+  <div class="erms-card-header"><h6 class="erms-card-title">Recent Complaints</h6></div>
+  <div style="overflow-x:auto;"><table class="erms-table">
+    <thead><tr><th>Subject</th><th>Course</th><th>Status</th><th>Filed</th></tr></thead>
+    <tbody>
+    {% for c in complaints %}
+    <tr><td>{{ c.subject|truncatechars:50 }}</td><td>{{ c.result.course.code }}</td>
+      <td><span class="badge-status badge-{{ c.status }}">{{ c.get_status_display }}</span></td>
+      <td>{{ c.created_at|date:"d M Y" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+const gpaData = [{% for g in gpa_records %}{"label":"{{ g.semester|escapejs }}","gpa":{{ g.gpa }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+if (gpaData.length) renderGPAChart('gpaTrend', gpaData.map(r=>r.label), gpaData.map(r=>r.gpa));
+</script>
+{% endblock %}

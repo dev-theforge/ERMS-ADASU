@@ -1,0 +1,108 @@
+{% extends "base/base.html" %}
+{% block title %}My Results — ERMS{% endblock %}
+{% block page_title %}My Results{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_student.html" %}{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="{% url 'student:dashboard' %}">Dashboard</a></li><li class="breadcrumb-item active">Results</li>{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left"><h4>Examination Results</h4><p>{{ student.matric_number }} · {{ student.user.get_full_name }}</p></div>
+  <a href="{% url 'student:transcript' %}" class="btn-erms-primary"><i class="bi bi-file-earmark-pdf me-1"></i>Download Transcript</a>
+</div>
+<!-- CGPA Summary -->
+{% if cgpa %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="erms-card">
+      <div class="erms-card-body text-center">
+        <div style="font-size:40px;font-weight:900;color:#0D7377;">{{ cgpa.cgpa }}</div>
+        <div style="font-size:13px;color:#718096;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Cumulative GPA</div>
+        <div style="font-size:12px;color:#718096;margin-top:4px;">{{ cgpa.total_accumulated_credit_units }} credit units accumulated</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="erms-card h-100">
+      <div class="erms-card-header"><h6 class="erms-card-title">GPA Trend by Semester</h6></div>
+      <div class="erms-card-body"><canvas id="gpaChart" height="80"></canvas></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<!-- Filters -->
+<div class="erms-card mb-4">
+  <div class="erms-card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-4"><label class="erms-form-label">Filter by Semester</label>
+        <select name="semester" class="erms-form-control">
+          <option value="">All Semesters</option>
+          {% for s in semesters %}<option value="{{ s.pk }}" {% if selected_semester == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-4"><label class="erms-form-label">Filter by Session</label>
+        <select name="session" class="erms-form-control">
+          <option value="">All Sessions</option>
+          {% for sess in sessions %}<option value="{{ sess.pk }}" {% if selected_session == sess.pk|stringformat:"s" %}selected{% endif %}>{{ sess }}</option>{% endfor %}
+        </select></div>
+      <div class="col-md-2"><button type="submit" class="btn-erms-primary w-100">Filter</button></div>
+      <div class="col-md-2"><a href="{% url 'student:results' %}" class="btn-erms-outline w-100 justify-content-center">Clear</a></div>
+    </form>
+  </div>
+</div>
+<!-- Results Table -->
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Course Code</th><th>Course Title</th><th>CU</th><th>Score</th><th>Grade</th><th>Grade Point</th><th>Quality Points</th><th>Semester</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for r in results %}
+      <tr>
+        <td><strong>{{ r.course.code }}</strong></td>
+        <td>{{ r.course.title }}</td>
+        <td class="text-center">{{ r.course.credit_units }}</td>
+        <td class="text-center"><strong>{{ r.score }}</strong></td>
+        <td class="text-center"><span class="badge-status grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td class="text-center">{{ r.grade_point }}</td>
+        <td class="text-center">{{ r.quality_points }}</td>
+        <td>{{ r.semester }}</td>
+        <td>
+          <a href="{% url 'student:download_result_slip' r.semester.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:11px;"><i class="bi bi-download"></i></a>
+          <a href="{% url 'complaints:submit' %}?result={{ r.pk }}" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:11px;"><i class="bi bi-chat"></i></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon"><i class="bi bi-clipboard-x"></i></div><h5>No Results Yet</h5><p>Your published results will appear here</p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- GPA Per Semester -->
+{% if gpa_records %}
+<div class="erms-card mt-4">
+  <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-bar-chart me-2"></i>GPA by Semester</h6></div>
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Semester</th><th>Credit Units</th><th>Quality Points</th><th>GPA</th><th>Result Slip</th></tr></thead>
+      <tbody>
+      {% for g in gpa_records %}
+      <tr>
+        <td><strong>{{ g.semester }}</strong></td>
+        <td class="text-center">{{ g.total_credit_units }}</td>
+        <td class="text-center">{{ g.total_quality_points }}</td>
+        <td class="text-center"><span style="font-size:18px;font-weight:800;color:#0D7377;">{{ g.gpa }}</span></td>
+        <td><a href="{% url 'student:download_result_slip' g.semester.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-earmark-pdf me-1"></i>Download</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+const gpaRecords = [{% for g in gpa_records %}{"label":"{{ g.semester|escapejs }}","gpa":{{ g.gpa }}}{% if not forloop.last %},{% endif %}{% endfor %}];
+if (gpaRecords.length) {
+  renderGPAChart('gpaChart', gpaRecords.map(r=>r.label), gpaRecords.map(r=>r.gpa));
+}
+</script>
+{% endblock %}

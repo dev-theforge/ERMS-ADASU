@@ -1,0 +1,79 @@
+{% extends "base/base.html" %}
+{% block title %}Complaint #{{ complaint.pk }} — ERMS{% endblock %}
+{% block page_title %}Complaint Detail{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_student.html" %}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="erms-card mb-4">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">{{ complaint.subject }}</h6>
+        <span class="badge-status badge-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+      </div>
+      <div class="erms-card-body">
+        <div class="row g-3 mb-3">
+          <div class="col-6"><span class="erms-form-label">Course:</span><div>{{ complaint.result.course.code }} — {{ complaint.result.course.title }}</div></div>
+          <div class="col-6"><span class="erms-form-label">Score Disputed:</span><div>{{ complaint.result.score }} ({{ complaint.result.grade }})</div></div>
+          <div class="col-6"><span class="erms-form-label">Semester:</span><div>{{ complaint.result.semester }}</div></div>
+          <div class="col-6"><span class="erms-form-label">Filed:</span><div>{{ complaint.created_at|date:"d M Y H:i" }}</div></div>
+        </div>
+        <hr/>
+        <h6 style="font-size:13px;font-weight:700;color:#1B2B5A;margin-bottom:8px;">Your Description:</h6>
+        <p style="font-size:14px;color:#4A5568;line-height:1.7;">{{ complaint.description }}</p>
+        {% if complaint.admin_response %}
+        <div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:16px;margin-top:16px;">
+          <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#1E40AF;margin-bottom:8px;"><i class="bi bi-shield me-1"></i>Admin Response</div>
+          <p style="font-size:14px;color:#1E40AF;margin:0;">{{ complaint.admin_response }}</p>
+          {% if complaint.resolved_at %}<div style="font-size:11px;color:#60A5FA;margin-top:8px;">Resolved: {{ complaint.resolved_at|date:"d M Y" }}</div>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Comments -->
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-chat me-2"></i>Comments ({{ comments|length }})</h6></div>
+      <div class="erms-card-body p-0">
+        {% for comment in comments %}
+        <div style="padding:16px;border-bottom:1px solid #E2E8F0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:600;color:#1B2B5A;">{{ comment.author.get_full_name }}</span>
+            <span style="font-size:11px;color:#718096;">{{ comment.created_at|timesince }} ago</span>
+          </div>
+          <p style="font-size:14px;color:#4A5568;margin:0;">{{ comment.content }}</p>
+        </div>
+        {% empty %}
+        <div style="padding:20px;text-align:center;color:#718096;font-size:13px;">No comments yet</div>
+        {% endfor %}
+        <div style="padding:16px;border-top:1px solid #E2E8F0;">
+          <form method="post">{% csrf_token %}
+            <div class="mb-3"><textarea name="content" class="erms-form-control" rows="3" placeholder="Add a comment..."></textarea></div>
+            <button type="submit" class="btn-erms-primary"><i class="bi bi-chat-text me-1"></i>Add Comment</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title">Status Timeline</h6></div>
+      <div class="erms-card-body">
+        <div class="complaint-timeline">
+          {% for step, label in forloop.parentloop.counter0|default:0|yesno:"," %}{% endfor %}
+          <div class="timeline-step">
+            <div class="timeline-dot done"></div>
+            <div class="timeline-body"><h6>Submitted</h6><p>{{ complaint.created_at|date:"d M Y" }}</p></div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-dot {% if complaint.status != 'pending' %}done{% elif complaint.status == 'under_review' %}active{% else %}pending{% endif %}"></div>
+            <div class="timeline-body"><h6>Under Review</h6><p>{% if complaint.reviewed_by %}By {{ complaint.reviewed_by.get_full_name }}{% else %}Awaiting review{% endif %}</p></div>
+          </div>
+          <div class="timeline-step">
+            <div class="timeline-dot {% if complaint.status == 'resolved' or complaint.status == 'rejected' %}done{% else %}pending{% endif %}"></div>
+            <div class="timeline-body"><h6>Resolved / Closed</h6><p>{% if complaint.resolved_at %}{{ complaint.resolved_at|date:"d M Y" }}{% else %}Pending{% endif %}</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

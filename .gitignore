@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Environment variables
+.env
+
+# VS Code
+.vscode/
+
+# Django collected static files
+staticfiles/
+
+# Uploaded media (optional)
+media/
+
+# Logs
+*.log

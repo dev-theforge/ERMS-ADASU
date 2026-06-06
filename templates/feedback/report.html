@@ -1,0 +1,42 @@
+{% extends "base/base.html" %}
+{% block title %}Feedback Report — ERMS{% endblock %}
+{% block page_title %}Feedback Report{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="stat-card"><div class="stat-icon stat-icon-navy"><i class="bi bi-chat-quote"></i></div><div class="stat-body"><div class="stat-value">{{ stats.total }}</div><div class="stat-label">Total Feedback</div></div></div></div>
+  <div class="col-md-4"><div class="stat-card"><div class="stat-icon stat-icon-gold"><i class="bi bi-star-fill"></i></div><div class="stat-body"><div class="stat-value">{% if stats.avg_rating %}{{ stats.avg_rating|floatformat:1 }}{% else %}—{% endif %}</div><div class="stat-label">Average Rating / 5</div></div></div></div>
+  <div class="col-md-4">
+    <div class="erms-card h-100"><div class="erms-card-header"><h6 class="erms-card-title">By Rating</h6></div>
+      <div class="erms-card-body p-2">
+        {% for row in stats.by_rating %}
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="font-size:13px;width:20px;">{{ row.rating }}⭐</span>
+          <div style="flex:1;background:#E2E8F0;border-radius:4px;height:10px;"><div style="width:{% widthratio row.count stats.total 100 %}%;background:#D4A017;border-radius:4px;height:10px;"></div></div>
+          <span style="font-size:12px;color:#718096;">{{ row.count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>From</th><th>Category</th><th>Subject</th><th>Rating</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for f in page_obj %}
+      <tr>
+        <td><strong>{{ f.author.get_full_name }}</strong><div style="font-size:11px;color:#718096;">{{ f.author.get_role_display }}</div></td>
+        <td>{{ f.get_category_display }}</td>
+        <td>{{ f.subject|truncatechars:50 }}</td>
+        <td>{% if f.rating %}{% for i in "12345" %}{% if forloop.counter <= f.rating %}⭐{% endif %}{% endfor %}{% else %}—{% endif %}</td>
+        <td>{{ f.created_at|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="text-center py-4 text-muted">No feedback yet</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

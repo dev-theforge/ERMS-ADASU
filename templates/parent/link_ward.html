@@ -1,0 +1,21 @@
+{% extends "base/base.html" %}
+{% block title %}Link Ward — ERMS{% endblock %}
+{% block page_title %}Link Ward{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_parent.html" %}{% endblock %}
+{% block content %}
+<div style="max-width:480px;margin:0 auto;">
+  <div class="erms-card">
+    <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-person-plus me-2"></i>Link a Student Ward</h6></div>
+    <div class="erms-card-body">
+      <p style="font-size:14px;color:#718096;margin-bottom:20px;">Enter your ward's matric number to link their account and begin monitoring their academic progress.</p>
+      <form method="post">{% csrf_token %}
+        <div class="mb-4">
+          <label class="erms-form-label">Student Matric Number *</label>
+          <input type="text" name="matric_number" class="erms-form-control" placeholder="e.g. ADU/2021/0001" required/>
+        </div>
+        <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-link me-1"></i>Link Ward</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

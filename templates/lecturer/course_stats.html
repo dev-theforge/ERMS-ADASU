@@ -1,0 +1,132 @@
+{% extends "base/base.html" %}
+
+{% block title %}
+Course Statistics — ERMS
+{% endblock %}
+
+{% block page_title %}
+Course Statistics
+{% endblock %}
+
+{% block sidebar_nav %}
+{% include "base/sidebar_lecturer.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h4>{{ course.code }} — {{ course.title }}</h4>
+    <p>{{ semester }} · {{ course.credit_units }} credit units</p>
+  </div>
+  <a
+    href="{% url 'lecturer:enter_scores' course.pk semester.pk %}"
+    class="btn-erms-outline"
+    ><i class="bi bi-pencil me-1"></i>Enter Scores</a
+  >
+</div>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-navy"><i class="bi bi-people"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ total }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-teal">
+        <i class="bi bi-calculator"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ avg_score }}</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-success">
+        <i class="bi bi-check-circle"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ pass_count }}</div>
+        <div class="stat-label">Passed</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-danger">
+        <i class="bi bi-x-circle"></i>
+      </div>
+      <div class="stat-body">
+        <div class="stat-value">{{ fail_count }}</div>
+        <div class="stat-label">Failed</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="erms-card">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">Grade Distribution</h6>
+      </div>
+      <div class="erms-card-body">
+        <canvas id="gradeChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="erms-card">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title">Grade Breakdown</h6>
+      </div>
+      <div style="overflow-x: auto">
+        <table class="erms-table">
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Count</th>
+              <th>%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grade, count in grade_dist.items %}
+            <tr>
+              <td>
+                <span class="badge-status grade-{{ grade }}">{{ grade }}</span>
+              </td>
+              <td>{{ count }}</td>
+              <td>
+                {% if total %} {% widthratio count total 100 %}% {% else %} 0%
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  const labels = [
+      {% for g, c in grade_dist.items %}
+          "{{ g }}"{% if not forloop.last %},{% endif %}
+      {% endfor %}
+  ];
+
+  const values = [
+      {% for g, c in grade_dist.items %}
+          {{ c }}{% if not forloop.last %},{% endif %}
+      {% endfor %}
+  ];
+
+  renderGradeChart('gradeChart', labels, values);
+</script>
+{% endblock %}

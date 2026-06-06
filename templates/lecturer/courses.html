@@ -1,0 +1,42 @@
+{% extends "base/base.html" %}
+{% block title %}My Courses — ERMS{% endblock %}
+{% block page_title %}My Courses{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_lecturer.html" %}{% endblock %}
+{% block content %}
+<div class="erms-card mb-3">
+  <div class="erms-card-body">
+    <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+      <div><label class="erms-form-label">Filter Semester</label>
+        <select name="semester" class="erms-form-control">
+          <option value="">All Semesters</option>
+          {% for s in semesters %}<option value="{{ s.pk }}" {% if selected == s.pk|stringformat:"s" %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+      <button type="submit" class="btn-erms-primary">Filter</button>
+    </form>
+  </div>
+</div>
+<div class="erms-card">
+  <div style="overflow-x:auto;">
+    <table class="erms-table">
+      <thead><tr><th>Course Code</th><th>Course Title</th><th>Department</th><th>CU</th><th>Semester</th><th>Actions</th></tr></thead>
+      <tbody>
+      {% for ca in assignments %}
+      <tr>
+        <td><strong>{{ ca.course.code }}</strong></td>
+        <td>{{ ca.course.title }}</td>
+        <td>{{ ca.course.department.code }}</td>
+        <td class="text-center">{{ ca.course.credit_units }}</td>
+        <td>{{ ca.semester }}</td>
+        <td>
+          <a href="{% url 'lecturer:enter_scores' ca.course.pk ca.semester.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2 me-1"><i class="bi bi-pencil me-1"></i>Scores</a>
+          <a href="{% url 'lecturer:course_stats' ca.course.pk ca.semester.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-bar-chart"></i></a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6"><div class="empty-state" style="padding:30px;"><i class="bi bi-journal-x" style="font-size:32px;color:#CBD5E0;"></i><p class="mt-2">No courses assigned</p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

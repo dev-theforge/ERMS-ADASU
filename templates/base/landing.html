@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERMS — Rev. Fr. Moses Orshio Adasu University</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="{% static 'css/erms.css' %}" rel="stylesheet">
+</head>
+<body>
+<div class="landing-page">
+  <!-- Navbar -->
+  <nav class="landing-navbar">
+    <div class="d-flex align-items-center gap-3">
+      <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+      <div>
+        <div class="brand-name" style="color:white;font-size:16px;font-weight:700;">ERMS</div>
+        <div style="color:rgba(255,255,255,.5);font-size:11px;">Adasu University</div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <a href="{% url 'accounts:login' %}" class="btn-hero-outline" style="padding:9px 22px;font-size:14px;">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+      <a href="{% url 'accounts:register_select' %}" class="btn-hero-primary" style="padding:9px 22px;font-size:14px;">
+        <i class="fas fa-user-plus"></i> Register
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="landing-hero">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <div class="hero-badge"><i class="fas fa-shield-alt"></i> Secure Academic Portal</div>
+        <h1 class="hero-title">
+          Online Examination<br>
+          <span>Results Management</span><br>
+          System
+        </h1>
+        <p class="hero-sub">
+          A centralised, secure platform for managing academic results at Rev. Fr. Moses Orshio Adasu University, Makurdi.
+          Automated GPA computation, real-time notifications, and transparent complaint resolution.
+        </p>
+        <div class="hero-actions">
+          <a href="{% url 'accounts:login' %}" class="btn-hero-primary">
+            <i class="fas fa-portal-enter"></i> Access Portal
+          </a>
+          <a href="{% url 'accounts:register_select' %}" class="btn-hero-outline">
+            <i class="fas fa-user-plus"></i> Create Account
+          </a>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-block">
+        <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:32px;backdrop-filter:blur(10px);">
+          <div class="row g-3 text-center text-white">
+            <div class="col-6">
+              <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px;">
+                <div style="font-size:32px;font-weight:800;color:#67e8f9;">4</div>
+                <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">User Roles</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px;">
+                <div style="font-size:32px;font-weight:800;color:#a7f3d0;">Auto</div>
+                <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">GPA Compute</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px;">
+                <div style="font-size:32px;font-weight:800;color:#fde68a;">PDF</div>
+                <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Transcripts</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px;">
+                <div style="font-size:32px;font-weight:800;color:#c4b5fd;">CSV</div>
+                <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Bulk Upload</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<div class="feature-cards">
+  <div class="container">
+    <div class="text-center mb-48" style="margin-bottom:40px;">
+      <h2 style="font-weight:800;color:var(--primary);">Everything You Need</h2>
+      <p class="text-muted">A complete academic results ecosystem for all stakeholders</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card">
+          <div class="feature-card-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-shield-alt"></i></div>
+          <h6 class="fw-700 mt-2">Admin Control</h6>
+          <p class="text-muted small mb-0">Full user management, result publishing, complaint resolution, and audit trails.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card">
+          <div class="feature-card-icon" style="background:#d1fae5;color:#059669;"><i class="fas fa-chalkboard-teacher"></i></div>
+          <h6 class="fw-700 mt-2">Lecturer Tools</h6>
+          <p class="text-muted small mb-0">Enter scores manually or bulk-upload via CSV. Submit for approval in one click.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card">
+          <div class="feature-card-icon" style="background:#fef3c7;color:#d97706;"><i class="fas fa-user-graduate"></i></div>
+          <h6 class="fw-700 mt-2">Student Portal</h6>
+          <p class="text-muted small mb-0">View results, GPA, CGPA, download transcripts, and raise complaints instantly.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="feature-card">
+          <div class="feature-card-icon" style="background:#ede9fe;color:#7c3aed;"><i class="fas fa-users"></i></div>
+          <h6 class="fw-700 mt-2">Parent Access</h6>
+          <p class="text-muted small mb-0">Monitor ward performance, receive notifications, and track academic progress.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer style="background:var(--primary-dark);color:rgba(255,255,255,.6);text-align:center;padding:24px;font-size:13px;">
+  &copy; {% now "Y" %} Rev. Fr. Moses Orshio Adasu University, Makurdi — ERMS v1.0
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

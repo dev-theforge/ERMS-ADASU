@@ -1,0 +1,154 @@
+{% extends "base/base.html" %}
+{% load humanize %}
+{% block title %}Admin Dashboard — ERMS{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <h4>Welcome back, {{ request.user.get_full_name }}</h4>
+    <p>Here's an overview of the ERMS system activity</p>
+  </div>
+  <div>
+    <a href="{% url 'admin_panel:publish_results' %}" class="btn-erms-teal"><i class="bi bi-send me-1"></i>Publish Results</a>
+  </div>
+</div>
+
+<!-- Stat Cards Row 1 -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-navy"><i class="bi bi-mortarboard"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ total_students|intcomma }}</div><div class="stat-label">Total Students</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-teal"><i class="bi bi-person-badge"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ total_lecturers|intcomma }}</div><div class="stat-label">Lecturers</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-gold"><i class="bi bi-people"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ total_parents|intcomma }}</div><div class="stat-label">Parents</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-success"><i class="bi bi-journal-bookmark"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ total_courses|intcomma }}</div><div class="stat-label">Active Courses</div></div>
+    </div>
+  </div>
+</div>
+<!-- Stat Cards Row 2 -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-info"><i class="bi bi-clipboard-data"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ total_results|intcomma }}</div><div class="stat-label">Results Uploaded</div></div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-warning"><i class="bi bi-person-check"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ pending_approvals }}</div>
+        <div class="stat-label">Pending Approvals</div>
+        {% if pending_approvals > 0 %}<a href="{% url 'admin_panel:users' %}?status=pending" class="stat-change stat-down">Review now →</a>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-danger"><i class="bi bi-chat-dots"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ pending_complaints }}</div>
+        <div class="stat-label">Pending Complaints</div>
+        {% if pending_complaints > 0 %}<a href="{% url 'complaints:admin_list' %}" class="stat-change stat-down">Review →</a>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon stat-icon-success"><i class="bi bi-send-check"></i></div>
+      <div class="stat-body"><div class="stat-value">{{ published_results|intcomma }}</div><div class="stat-label">Published Results</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Recent Users -->
+  <div class="col-lg-7">
+    <div class="erms-card h-100">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title"><i class="bi bi-people me-2 text-navy"></i>Recent Registrations</h6>
+        <a href="{% url 'admin_panel:users' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="erms-table">
+          <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody>
+          {% for u in recent_users %}
+          <tr>
+            <td><strong>{{ u.get_full_name|default:u.username }}</strong></td>
+            <td>{{ u.username }}</td>
+            <td><span class="badge-role-{{ u.role }}">{{ u.get_role_display }}</span></td>
+            <td><span class="badge-status badge-{{ u.status }}">{{ u.get_status_display }}</span></td>
+            <td>{{ u.date_joined|date:"d M Y" }}</td>
+            <td>
+              {% if u.status == 'pending' %}
+              <form method="post" action="{% url 'admin_panel:user_action' u.pk %}" style="display:inline">{% csrf_token %}
+                <input type="hidden" name="action" value="approve"/>
+                <button type="submit" class="btn btn-xs btn-success btn-sm py-0 px-2" style="font-size:11px">Approve</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}<tr><td colspan="6" class="text-center text-muted py-3">No users found</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Activity Log -->
+  <div class="col-lg-5">
+    <div class="erms-card h-100">
+      <div class="erms-card-header">
+        <h6 class="erms-card-title"><i class="bi bi-activity me-2"></i>System Activity</h6>
+        <a href="{% url 'admin_panel:audit_logs' %}" class="btn btn-sm btn-outline-secondary">All Logs</a>
+      </div>
+      <div class="erms-card-body p-0" style="max-height:340px;overflow-y:auto;">
+        {% for log in recent_activity %}
+        <div style="padding:10px 16px;border-bottom:1px solid #E2E8F0;display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#0D7377;flex-shrink:0;margin-top:5px;"></div>
+          <div>
+            <div style="font-size:13px;font-weight:500;color:#1A202C;">{{ log.action }}</div>
+            <div style="font-size:11px;color:#718096;">{{ log.user.username|default:"System" }} · {{ log.timestamp|timesince }} ago</div>
+          </div>
+        </div>
+        {% empty %}<div class="empty-state" style="padding:30px"><div class="empty-state-icon"><i class="bi bi-activity"></i></div><p>No activity yet</p></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="erms-card">
+  <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-lightning me-2"></i>Quick Actions</h6></div>
+  <div class="erms-card-body">
+    <div class="row g-3">
+      <div class="col-6 col-md-2"><a href="{% url 'admin_panel:users' %}?status=pending" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-person-check" style="font-size:20px;"></i><span style="font-size:12px;">Approvals</span></a></div>
+      <div class="col-6 col-md-2"><a href="{% url 'admin_panel:approve_results' %}" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-check2-square" style="font-size:20px;"></i><span style="font-size:12px;">Approve Results</span></a></div>
+      <div class="col-6 col-md-2"><a href="{% url 'admin_panel:publish_results' %}" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-send" style="font-size:20px;"></i><span style="font-size:12px;">Publish</span></a></div>
+      <div class="col-6 col-md-2"><a href="{% url 'complaints:admin_list' %}" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-chat-dots" style="font-size:20px;"></i><span style="font-size:12px;">Complaints</span></a></div>
+      <div class="col-6 col-md-2"><a href="{% url 'reports:home' %}" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-bar-chart" style="font-size:20px;"></i><span style="font-size:12px;">Reports</span></a></div>
+      <div class="col-6 col-md-2"><a href="{% url 'admin_panel:courses' %}" class="btn-erms-outline w-100 justify-content-center text-center" style="flex-direction:column;gap:4px;padding:16px 8px;"><i class="bi bi-journal-bookmark" style="font-size:20px;"></i><span style="font-size:12px;">Courses</span></a></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

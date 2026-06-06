@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}ERMS — Adasu University{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.css" rel="stylesheet">
+{% load static %}
+<link href="{% static 'css/erms.css' %}" rel="stylesheet">
+{% block extra_css %}{% endblock %}
+</head>
+<body class="erms-layout {% block body_class %}{% endblock %}">
+
+{% block body %}
+<div class="d-flex h-100">
+  <!-- Sidebar -->
+  <nav class="erms-sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">ERMS</span>
+        <span class="brand-sub">Adasu University</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    {% block sidebar_nav %}{% endblock %}
+    <div class="sidebar-footer">
+      <a href="{% url 'accounts:profile' %}" class="sidebar-user">
+        {% if request.user.profile_picture %}
+          <img src="{{ request.user.profile_picture.url }}" alt="Profile" class="user-avatar">
+        {% else %}
+          <div class="user-avatar-placeholder">{{ request.user.first_name|first }}{{ request.user.last_name|first }}</div>
+        {% endif %}
+        <div class="user-info">
+          <span class="user-name">{{ request.user.get_full_name|truncatechars:20 }}</span>
+          <span class="user-role badge-role-{{ request.user.role }}">{{ request.user.get_role_display }}</span>
+        </div>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <div class="erms-main" id="main-content">
+    <!-- Topbar -->
+    <header class="erms-topbar">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topbar-title">
+        <h6 class="mb-0">{% block page_title %}Dashboard{% endblock %}</h6>
+        <small class="text-muted d-none d-md-block">{% block page_breadcrumb %}{% endblock %}</small>
+      </div>
+      <div class="topbar-actions">
+        <!-- Notifications -->
+        <div class="dropdown">
+          <button class="topbar-btn position-relative" data-bs-toggle="dropdown">
+            <i class="fas fa-bell"></i>
+            {% if unread_count > 0 %}
+              <span class="badge-notif">{{ unread_count }}</span>
+            {% endif %}
+          </button>
+          <div class="dropdown-menu dropdown-menu-end notif-dropdown shadow">
+            <div class="notif-header d-flex justify-content-between align-items-center">
+              <strong>Notifications</strong>
+              <a href="{% url 'notifications:mark_all_read' %}" class="text-muted small">Mark all read</a>
+            </div>
+            {% for notif in unread_notifications %}
+            <a class="notif-item {% if not notif.is_read %}unread{% endif %}"
+               href="{% url 'notifications:mark_read' notif.pk %}">
+              <div class="notif-icon notif-{{ notif.notification_type }}">
+                <i class="fas {% if notif.notification_type == 'result_published' %}fa-file-alt
+                   {% elif notif.notification_type == 'complaint_update' %}fa-comment-dots
+                   {% elif notif.notification_type == 'gpa_warning' %}fa-exclamation-triangle
+                   {% elif notif.notification_type == 'account_approval' %}fa-user-check
+                   {% else %}fa-bell{% endif %}"></i>
+              </div>
+              <div class="notif-body">
+                <p class="notif-title">{{ notif.title }}</p>
+                <p class="notif-msg">{{ notif.message|truncatechars:60 }}</p>
+                <small class="notif-time">{{ notif.created_at|timesince }} ago</small>
+              </div>
+            </a>
+            {% empty %}
+            <div class="notif-empty text-center text-muted py-3">
+              <i class="fas fa-bell-slash mb-1"></i><br>No new notifications
+            </div>
+            {% endfor %}
+            <div class="notif-footer text-center">
+              <a href="{% url 'notifications:list' %}" class="text-primary small">View all notifications</a>
+            </div>
+          </div>
+        </div>
+        <!-- User menu -->
+        <div class="dropdown">
+          <button class="topbar-user-btn" data-bs-toggle="dropdown">
+            {% if request.user.profile_picture %}
+              <img src="{{ request.user.profile_picture.url }}" class="topbar-avatar" alt="">
+            {% else %}
+              <div class="topbar-avatar-text">{{ request.user.first_name|first }}{{ request.user.last_name|first }}</div>
+            {% endif %}
+            <i class="fas fa-chevron-down ms-1 small"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow">
+            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user-circle me-2 text-primary"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}"><i class="fas fa-lock me-2 text-warning"></i>Change Password</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page content -->
+    <main class="erms-content">
+      {% if messages %}
+        <div class="messages-wrapper">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+              <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}fa-times-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} me-2"></i>
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+<script src="{% static 'js/erms.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

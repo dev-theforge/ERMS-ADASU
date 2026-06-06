@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lecturer Registration — ERMS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  {% load static %}<link rel="stylesheet" href="{% static 'css/erms.css' %}"/>
+  <style>
+    body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#0F1D3D,#1B2B5A,#0D7377);min-height:100vh;padding:40px 24px;}
+    .reg-card{background:white;border-radius:20px;max-width:640px;margin:0 auto;overflow:hidden;box-shadow:0 25px 60px rgba(0,0,0,.3);}
+    .reg-header{background:linear-gradient(135deg,#0D7377,#1B2B5A);padding:28px 32px;}
+    .reg-header h2{color:white;font-weight:800;margin:0 0 4px;}
+    .reg-header p{color:rgba(255,255,255,.65);font-size:13px;margin:0;}
+    .reg-body{padding:32px;}
+    .section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#718096;margin:20px 0 12px;padding-bottom:8px;border-bottom:1px solid #E2E8F0;}
+    .form-label{font-size:13px;font-weight:600;color:#1A202C;}
+    .form-control,.form-select{border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;padding:10px 14px;font-family:'Inter',sans-serif;}
+    .form-control:focus,.form-select:focus{border-color:#0D7377;box-shadow:0 0 0 3px rgba(13,115,119,.1);}
+    .btn-submit{background:linear-gradient(135deg,#0D7377,#1B2B5A);color:white;border:none;border-radius:10px;padding:13px 32px;font-weight:700;font-size:15px;cursor:pointer;width:100%;font-family:'Inter',sans-serif;}
+    .errorlist{list-style:none;padding:0;margin:4px 0 0;} .errorlist li{font-size:12px;color:#C0392B;}
+    .back-btn{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.7);text-decoration:none;font-size:13px;margin-bottom:16px;}
+  </style>
+</head>
+<body>
+<a href="{% url 'accounts:register' %}" class="back-btn"><i class="bi bi-arrow-left"></i> Back</a>
+<div class="reg-card">
+  <div class="reg-header">
+    <h2>👨‍🏫 Lecturer Registration</h2>
+    <p>Create your lecturer account — pending admin approval</p>
+  </div>
+  <div class="reg-body">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    <form method="post">{% csrf_token %}
+      <p class="section-title">Personal Information</p>
+      <div class="row g-3">
+        <div class="col-6"><label class="form-label">First Name *</label><input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required/>{{ form.first_name.errors }}</div>
+        <div class="col-6"><label class="form-label">Last Name *</label><input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required/></div>
+        <div class="col-6"><label class="form-label">Email *</label><input type="email" name="email" class="form-control" value="{{ form.email.value|default:'' }}" required/></div>
+        <div class="col-6"><label class="form-label">Phone</label><input type="text" name="phone_number" class="form-control" value="{{ form.phone_number.value|default:'' }}"/></div>
+      </div>
+      <p class="section-title">Academic Details</p>
+      <div class="row g-3">
+        <div class="col-6"><label class="form-label">Staff ID *</label><input type="text" name="staff_id" class="form-control" placeholder="ADU/LEC/001" required/>{{ form.staff_id.errors }}</div>
+        <div class="col-6"><label class="form-label">Title</label><input type="text" name="title" class="form-control" placeholder="Dr., Prof., Mr., Mrs."/></div>
+        <div class="col-12"><label class="form-label">Department *</label><select name="department" class="form-select" required>{% for d in form.department.field.queryset %}<option value="{{ d.pk }}">{{ d }}</option>{% endfor %}</select></div>
+        <div class="col-6"><label class="form-label">Qualification</label><input type="text" name="qualification" class="form-control" placeholder="PhD, MSc, etc."/></div>
+        <div class="col-6"><label class="form-label">Specialization</label><input type="text" name="specialization" class="form-control" placeholder="Area of specialization"/></div>
+      </div>
+      <p class="section-title">Account Credentials</p>
+      <div class="row g-3">
+        <div class="col-12"><label class="form-label">Username *</label><input type="text" name="username" class="form-control" value="{{ form.username.value|default:'' }}" required/>{{ form.username.errors }}</div>
+        <div class="col-6"><label class="form-label">Password *</label><input type="password" name="password1" class="form-control" required/></div>
+        <div class="col-6"><label class="form-label">Confirm Password *</label><input type="password" name="password2" class="form-control" required/></div>
+      </div>
+      <div class="mt-4"><button type="submit" class="btn-submit"><i class="bi bi-person-plus me-2"></i>Submit Registration</button></div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

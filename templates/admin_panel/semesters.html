@@ -1,0 +1,54 @@
+{% extends "base/base.html" %}
+{% block title %}Semesters — ERMS{% endblock %}
+{% block page_title %}Semesters{% endblock %}
+{% block sidebar_nav %}{% include "base/sidebar_admin.html" %}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-calendar2-range me-2"></i>All Semesters</h6></div>
+      <div style="overflow-x:auto;">
+        <table class="erms-table">
+          <thead><tr><th>Semester</th><th>Session</th><th>Start</th><th>End</th><th>Current</th></tr></thead>
+          <tbody>
+          {% for s in semesters %}
+          <tr>
+            <td><strong>{{ s.get_semester_type_display }}</strong></td>
+            <td>{{ s.session.name }}</td>
+            <td>{{ s.start_date|date:"d M Y" }}</td>
+            <td>{{ s.end_date|date:"d M Y" }}</td>
+            <td>{% if s.is_current %}<span class="badge-status badge-active">Current</span>{% else %}—{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center py-4 text-muted">No semesters yet</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="erms-card">
+      <div class="erms-card-header"><h6 class="erms-card-title"><i class="bi bi-plus-circle me-2"></i>Add Semester</h6></div>
+      <div class="erms-card-body">
+        <form method="post">{% csrf_token %}
+          <div class="mb-3"><label class="erms-form-label">Session *</label>
+            <select name="session" class="erms-form-control" required>
+              <option value="">Select session…</option>
+              {% for s in sessions %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+            </select></div>
+          <div class="mb-3"><label class="erms-form-label">Semester *</label>
+            <select name="semester_type" class="erms-form-control" required>
+              <option value="first">First Semester</option>
+              <option value="second">Second Semester</option>
+            </select></div>
+          <div class="mb-3"><label class="erms-form-label">Start Date *</label><input type="date" name="start_date" class="erms-form-control" required/></div>
+          <div class="mb-3"><label class="erms-form-label">End Date *</label><input type="date" name="end_date" class="erms-form-control" required/></div>
+          <div class="mb-4"><div class="form-check"><input type="checkbox" name="is_current" class="form-check-input" id="isCurrentSem"/><label class="form-check-label" for="isCurrentSem" style="font-size:14px;">Mark as Current Semester</label></div></div>
+          <button type="submit" class="btn-erms-primary w-100"><i class="bi bi-plus me-1"></i>Create Semester</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
