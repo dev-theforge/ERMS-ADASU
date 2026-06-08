@@ -125,6 +125,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='apikey')
 EMAIL_HOST_PASSWORD = config('SENDGRID_API_KEY', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@adasu.edu.ng')
+SENDGRID_API_KEY = config('SENDGRID_API_KEY', default='')
 
 # Twilio
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default='')

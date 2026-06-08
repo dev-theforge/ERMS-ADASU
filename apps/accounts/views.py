@@ -2,10 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Avg
 from django.utils import timezone
-from .models import CustomUser, StudentProfile, LecturerProfile, ParentProfile, Department, Faculty, AcademicSession, Semester, Course, GradeScale, Enrollment
-from .forms import LoginForm, StudentRegistrationForm, LecturerRegistrationForm, ParentRegistrationForm, UserProfileUpdateForm, ChangePasswordForm, LinkWardForm
+from .models import (
+    CustomUser, StudentProfile, LecturerProfile, ParentProfile,
+    Department, Faculty, AcademicSession, Semester, Course, GradeScale, Enrollment
+)
+from .forms import (
+    LoginForm, StudentRegistrationForm, LecturerRegistrationForm,
+    ParentRegistrationForm, UserProfileUpdateForm, ChangePasswordForm, LinkWardForm
+)
 from .decorators import admin_required, student_required, parent_required, lecturer_required
 from apps.notifications.models import Notification
 from apps.audit.models import AuditLog
@@ -54,7 +59,7 @@ def register_view(request):
 def register_student(request):
     form = StudentRegistrationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
-        user = form.save()
+        form.save()
         messages.success(request, "Registration submitted! Await administrator approval.")
         return redirect('accounts:login')
     return render(request, 'accounts/register_student.html', {'form': form, 'title': 'Student Registration'})
@@ -114,14 +119,22 @@ def change_password_view(request):
             user.set_password(form.cleaned_data['new_password1'])
             user.save()
             update_session_auth_hash(request, user)
-            Notification.notify(user, 'password_changed', 'Password Changed', 'Your account password was recently changed.')
+            Notification.notify(
+                recipient=user,
+                ntype='password_changed',
+                title='Password Changed',
+                message=(
+                    'Your ERMS account password was changed successfully. '
+                    'If you did not make this change, contact support immediately at erms-support@adasu.edu.ng.'
+                ),
+            )
             AuditLog.log(user=user, action='Changed password')
             messages.success(request, "Password changed successfully.")
             return redirect('accounts:profile')
     return render(request, 'accounts/change_password.html', {'form': form})
 
 
-# ─── ADMIN PANEL VIEWS ───────────────────────────────────────────────────────
+# ─── ADMIN PANEL VIEWS ────────────────────────────────────────────────────────
 
 @admin_required
 def admin_dashboard(request):
@@ -145,51 +158,84 @@ def admin_dashboard(request):
 
 @admin_required
 def admin_users(request):
-    role_filter = request.GET.get('role', '')
+    role_filter   = request.GET.get('role', '')
     status_filter = request.GET.get('status', '')
-    search = request.GET.get('q', '')
+    search        = request.GET.get('q', '')
     users = CustomUser.objects.all()
     if role_filter:
         users = users.filter(role=role_filter)
     if status_filter:
         users = users.filter(status=status_filter)
     if search:
-        users = users.filter(username__icontains=search) | users.filter(first_name__icontains=search) | users.filter(last_name__icontains=search)
+        users = (
+            users.filter(username__icontains=search) |
+            users.filter(first_name__icontains=search) |
+            users.filter(last_name__icontains=search) |
+            users.filter(email__icontains=search)
+        )
     from django.core.paginator import Paginator
     paginator = Paginator(users.order_by('-date_joined'), 25)
     page = paginator.get_page(request.GET.get('page', 1))
-    return render(request, 'admin_panel/users.html', {'page_obj': page, 'role_filter': role_filter, 'status_filter': status_filter, 'search': search})
+    return render(request, 'admin_panel/users.html', {
+        'page_obj': page,
+        'role_filter': role_filter,
+        'status_filter': status_filter,
+        'search': search,
+    })
 
 
 @admin_required
 def admin_approve_user(request, pk):
-    user = get_object_or_404(CustomUser, pk=pk)
+    user   = get_object_or_404(CustomUser, pk=pk)
     action = request.POST.get('action')
+
     if action == 'approve':
-        user.status = 'active'
+        user.status    = 'active'
         user.is_active = True
         user.save()
-        Notification.notify(user, 'account_approval', 'Account Approved', f'Congratulations {user.get_full_name()}! Your account has been approved. You can now log in.')
+        Notification.notify(
+            recipient=user,
+            ntype='account_approval',
+            title='Account Approved — Welcome to ERMS',
+            message=(
+                f'Congratulations {user.get_full_name()}! '
+                f'Your registration on the ERMS portal has been approved by the administrator. '
+                f'You can now log in with your username and password to access the portal.'
+            ),
+        )
         AuditLog.log(request.user, f'Approved account for {user.username}')
         messages.success(request, f"{user.get_full_name()} approved successfully.")
+
     elif action == 'reject':
         user.status = 'rejected'
         user.save()
-        Notification.notify(user, 'account_rejection', 'Account Rejected', 'Your registration has been reviewed and rejected. Contact support for details.')
+        Notification.notify(
+            recipient=user,
+            ntype='account_rejection',
+            title='Account Registration Not Approved',
+            message=(
+                f'Dear {user.get_full_name()}, your registration on the ERMS portal '
+                f'has been reviewed and was not approved at this time. '
+                f'Please contact the Academic Affairs office for further information.'
+            ),
+        )
         AuditLog.log(request.user, f'Rejected account for {user.username}')
         messages.warning(request, f"{user.get_full_name()} rejected.")
+
     elif action == 'deactivate':
-        user.status = 'inactive'
+        user.status    = 'inactive'
         user.is_active = False
         user.save()
         AuditLog.log(request.user, f'Deactivated account for {user.username}')
         messages.info(request, f"{user.get_full_name()} deactivated.")
+
     elif action == 'activate':
-        user.status = 'active'
+        user.status    = 'active'
         user.is_active = True
         user.save()
         AuditLog.log(request.user, f'Re-activated account for {user.username}')
         messages.success(request, f"{user.get_full_name()} re-activated.")
+
     return redirect('admin_panel:users')
 
 
@@ -202,7 +248,7 @@ def admin_faculties(request):
         Faculty.objects.create(name=name, code=code, description=desc)
         messages.success(request, "Faculty created.")
         AuditLog.log(request.user, f'Created faculty: {name}')
-    faculties = Faculty.objects.annotate(dept_count=Count('departments')).order_by('name')
+    faculties = Faculty.objects.all().order_by('name')
     return render(request, 'admin_panel/faculties.html', {'faculties': faculties})
 
 
@@ -214,17 +260,19 @@ def admin_departments(request):
         faculty_id = request.POST.get('faculty')
         dept = Department.objects.create(name=name, code=code, faculty_id=faculty_id)
         messages.success(request, f"Department {dept.code} created.")
-    depts = Department.objects.select_related('faculty').annotate(student_count=Count('students')).order_by('name')
+    depts    = Department.objects.select_related('faculty').order_by('name')
     faculties = Faculty.objects.filter(is_active=True)
-    return render(request, 'admin_panel/departments.html', {'departments': depts, 'faculties': faculties})
+    return render(request, 'admin_panel/departments.html', {
+        'departments': depts, 'faculties': faculties
+    })
 
 
 @admin_required
 def admin_sessions(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
-        start = request.POST.get('start_date')
-        end = request.POST.get('end_date')
+        name       = request.POST.get('name')
+        start      = request.POST.get('start_date')
+        end        = request.POST.get('end_date')
         is_current = request.POST.get('is_current') == 'on'
         AcademicSession.objects.create(name=name, start_date=start, end_date=end, is_current=is_current)
         messages.success(request, f"Session {name} created.")
@@ -236,15 +284,20 @@ def admin_sessions(request):
 def admin_semesters(request):
     if request.method == 'POST':
         session_id = request.POST.get('session')
-        sem_type = request.POST.get('semester_type')
-        start = request.POST.get('start_date')
-        end = request.POST.get('end_date')
+        sem_type   = request.POST.get('semester_type')
+        start      = request.POST.get('start_date')
+        end        = request.POST.get('end_date')
         is_current = request.POST.get('is_current') == 'on'
-        Semester.objects.create(session_id=session_id, semester_type=sem_type, start_date=start, end_date=end, is_current=is_current)
+        Semester.objects.create(
+            session_id=session_id, semester_type=sem_type,
+            start_date=start, end_date=end, is_current=is_current
+        )
         messages.success(request, "Semester created.")
     semesters = Semester.objects.select_related('session').order_by('-session__start_date', 'semester_type')
-    sessions = AcademicSession.objects.all()
-    return render(request, 'admin_panel/semesters.html', {'semesters': semesters, 'sessions': sessions})
+    sessions  = AcademicSession.objects.all()
+    return render(request, 'admin_panel/semesters.html', {
+        'semesters': semesters, 'sessions': sessions
+    })
 
 
 @admin_required
@@ -259,9 +312,11 @@ def admin_courses(request):
             semester_type=request.POST.get('semester_type', 'first'),
         )
         messages.success(request, "Course created.")
-    courses = Course.objects.select_related('department__faculty').order_by('code')
+    courses     = Course.objects.select_related('department__faculty').order_by('code')
     departments = Department.objects.filter(is_active=True).select_related('faculty')
-    return render(request, 'admin_panel/courses.html', {'courses': courses, 'departments': departments})
+    return render(request, 'admin_panel/courses.html', {
+        'courses': courses, 'departments': departments
+    })
 
 
 @admin_required
@@ -291,56 +346,142 @@ def admin_audit_logs(request):
 @admin_required
 def admin_publish_results(request):
     from apps.results.models import Result
-    semester_id = request.GET.get('semester')
-    semesters = Semester.objects.select_related('session').order_by('-session__start_date')
-    results = []
+    from apps.results.services import recompute_all_gpa_for_semester
+
+    semester_id       = request.GET.get('semester')
+    semesters         = Semester.objects.select_related('session').order_by('-session__start_date')
+    results           = []
     selected_semester = None
+
     if semester_id:
         selected_semester = get_object_or_404(Semester, pk=semester_id)
-        results = Result.objects.filter(semester=selected_semester, status='approved').select_related('student__user', 'course')
+        results = Result.objects.filter(
+            semester=selected_semester, status='approved'
+        ).select_related('student__user', 'course')
+
     if request.method == 'POST':
         sem_id = request.POST.get('semester_id')
-        sem = get_object_or_404(Semester, pk=sem_id)
+        sem    = get_object_or_404(Semester, pk=sem_id)
+
+        # Publish all approved results for this semester
         approved = Result.objects.filter(semester=sem, status='approved')
-        count = approved.update(status='published', published_at=timezone.now())
-       
-        student_ids = approved.values_list('student__user', flat=True).distinct()
-        for uid in CustomUser.objects.filter(pk__in=student_ids):
-            Notification.notify(uid, 'result_published', 'Results Published', f'Your results for {sem} have been published. Log in to view your results.')
+        count    = approved.update(status='published', published_at=timezone.now())
+
+        # Recompute GPA/CGPA for every affected student
+        recompute_all_gpa_for_semester(sem)
+
+        # --- Notify students ---
+        student_ids = Result.objects.filter(
+            semester=sem, status='published'
+        ).values_list('student_id', flat=True).distinct()
+
+        students = StudentProfile.objects.filter(
+            pk__in=student_ids
+        ).select_related('user')
+
+        for sp in students:
+            Notification.notify(
+                recipient=sp.user,
+                ntype='result_published',
+                title=f'Results Published — {sem}',
+                message=(
+                    f'Your examination results for {sem} have been published on the ERMS portal. '
+                    f'Log in to view your scores, grades, and GPA. '
+                    f'You can also download your result slip from the portal.'
+                ),
+                url='/student/results/',
+            )
+
+        # --- Notify parents of those students ---
+        from apps.accounts.models import ParentProfile
+        parents = ParentProfile.objects.filter(
+            wards__in=students
+        ).select_related('user').distinct()
+
+        for parent in parents:
+            # Get ward names for this parent
+            ward_names = ', '.join(
+                w.user.get_full_name()
+                for w in parent.wards.filter(pk__in=student_ids)
+            )
+            Notification.notify(
+                recipient=parent.user,
+                ntype='result_published',
+                title=f'Ward Results Published — {sem}',
+                message=(
+                    f'The examination results for {sem} have been published for your ward(s): {ward_names}. '
+                    f'Log in to the ERMS Parent Portal to view your ward\'s performance, '
+                    f'GPA, and full academic report.'
+                ),
+                url='/parent/dashboard/',
+            )
+
         AuditLog.log(request.user, f'Published {count} results for {sem}')
-        messages.success(request, f"{count} results published for {sem}.")
+        messages.success(request, f"{count} results published for {sem}. Students and parents notified.")
         return redirect('admin_panel:publish_results')
-    return render(request, 'admin_panel/publish_results.html', {'semesters': semesters, 'results': results, 'selected_semester': selected_semester})
+
+    return render(request, 'admin_panel/publish_results.html', {
+        'semesters': semesters,
+        'results': results,
+        'selected_semester': selected_semester,
+    })
 
 
 @admin_required
 def admin_approve_results(request):
     from apps.results.models import Result
-    from apps.results.services import recompute_all_gpa_for_semester
-    semester_id = request.GET.get('semester')
-    semesters = Semester.objects.select_related('session').order_by('-session__start_date')
-    results = Result.objects.none()
+
+    semester_id       = request.GET.get('semester')
+    semesters         = Semester.objects.select_related('session').order_by('-session__start_date')
+    results           = Result.objects.none()
     selected_semester = None
 
     if semester_id:
         selected_semester = get_object_or_404(Semester, pk=semester_id)
-        results = Result.objects.filter(semester=selected_semester, status='submitted').select_related('student__user', 'course', 'lecturer__user')
+        results = Result.objects.filter(
+            semester=selected_semester, status='submitted'
+        ).select_related('student__user', 'course', 'lecturer__user')
 
     if request.method == 'POST':
-        action = request.POST.get('action')
+        action     = request.POST.get('action')
         result_ids = request.POST.getlist('result_ids')
+
         if action == 'approve' and result_ids:
-            count = Result.objects.filter(pk__in=result_ids, status='submitted').update(
-                status='approved', approved_by=request.user, approved_at=timezone.now()
+            count = Result.objects.filter(
+                pk__in=result_ids, status='submitted'
+            ).update(
+                status='approved',
+                approved_by=request.user,
+                approved_at=timezone.now()
             )
             AuditLog.log(request.user, f'Approved {count} results')
             messages.success(request, f"{count} result(s) approved.")
+
         elif action == 'reject' and result_ids:
-            count = Result.objects.filter(pk__in=result_ids, status='submitted').update(status='rejected')
+            rejected = Result.objects.filter(pk__in=result_ids, status='submitted')
+            # Notify lecturers whose results were rejected
+            lecturer_users = set()
+            for r in rejected.select_related('lecturer__user'):
+                if r.lecturer:
+                    lecturer_users.add(r.lecturer.user)
+            count = rejected.update(status='rejected')
+            for lu in lecturer_users:
+                Notification.notify(
+                    recipient=lu,
+                    ntype='result_submitted',
+                    title='Results Rejected — Action Required',
+                    message=(
+                        f'Some of your submitted results for {selected_semester} were rejected by the administrator. '
+                        f'Please log in, review the results, make corrections, and resubmit.'
+                    ),
+                )
             AuditLog.log(request.user, f'Rejected {count} results')
-            messages.warning(request, f"{count} result(s) rejected.")
+            messages.warning(request, f"{count} result(s) rejected. Lecturers notified.")
+
         return redirect(f'/admin-panel/approve-results/?semester={semester_id}')
 
     return render(request, 'admin_panel/approve_results.html', {
-        'semesters': semesters, 'results': results, 'selected_semester': selected_semester
+        'semesters': semesters,
+        'results': results,
+        'selected_semester': selected_semester,
     })
